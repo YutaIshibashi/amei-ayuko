@@ -1,22 +1,34 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { fetchSettings } from './api';
 import { ASSETS, SHOPS, SITE, INSTAGRAM_URL } from './site';
 import type { SiteSettings } from './types';
 
 /* ------------------------------------------------------------------ motion */
 
+const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
+
+function subscribeReducedMotion(onChange: () => void): () => void {
+  const mq = window.matchMedia(REDUCED_MOTION_QUERY);
+  mq.addEventListener('change', onChange);
+  return () => mq.removeEventListener('change', onChange);
+}
+
+/**
+ * Reads the user's motion preference.
+ *
+ * `useSyncExternalStore` rather than an effect that calls setState: the media
+ * query is an external store, and this is the API for reading one without a
+ * render-then-correct pass. It also gives a defined server snapshot, so the
+ * static export renders the same thing the client's first render does.
+ */
 export function usePrefersReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const update = () => setReduced(mq.matches);
-    update();
-    mq.addEventListener('change', update);
-    return () => mq.removeEventListener('change', update);
-  }, []);
-  return reduced;
+  return useSyncExternalStore(
+    subscribeReducedMotion,
+    () => window.matchMedia(REDUCED_MOTION_QUERY).matches,
+    () => false,
+  );
 }
 
 /* ------------------------------------------------------------- scroll lock */
@@ -76,7 +88,13 @@ export function useFocusTrap(
 ): void {
   const returnFocusTo = useRef<HTMLElement | null>(null);
   const escapeRef = useRef(onEscape);
-  escapeRef.current = onEscape;
+
+  // The latest-callback ref is written in an effect rather than during render:
+  // a render can be thrown away or replayed under concurrent rendering, and a
+  // mutation in the render body would survive that.
+  useEffect(() => {
+    escapeRef.current = onEscape;
+  });
 
   useEffect(() => {
     if (!active) return;
@@ -180,10 +198,9 @@ export function useSettings(): SiteSettings {
   const [settings, setSettings] = useState<SiteSettings>(settingsCache ?? FALLBACK_SETTINGS);
 
   useEffect(() => {
-    if (settingsCache) {
-      setSettings(settingsCache);
-      return;
-    }
+    // No synchronous setState here even when the cache is already warm: the
+    // initial state below already reads it, and anything that filled it after
+    // that arrives through the promise instead.
     let alive = true;
     settingsPromise ??= fetchSettings()
       .then((s) => {
@@ -260,9 +277,30 @@ export function useCopyToClipboard(resetMs = 2200): [boolean, (text: string) => 
   return [copied, copy];
 }
 
-/** Avoids the hydration mismatch for anything that reads browser-only state. */
+/** A store that never changes; only its server/client snapshots differ. */
+const noopSubscribe = (): (() => void) => () => {};
+
+/**
+ * False while rendering on the server (and during the first client render, so
+ * hydration matches), true afterwards. Used by anything that must not read
+ * browser-only state until the markup has settled.
+ */
 export function useMounted(): boolean {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  return mounted;
+  return useSyncExternalStore(noopSubscribe, () => true, () => false);
+}
+
+function subscribeScroll(onChange: () => void): () => void {
+  window.addEventListener('scroll', onChange, { passive: true });
+  return () => window.removeEventListener('scroll', onChange);
+}
+
+/**
+ * Whether the page is scrolled past `threshold`.
+ *
+ * The snapshot is a boolean, so React only re-renders on the crossing rather
+ * than on every scroll event.
+ */
+export function useScrolledPast(threshold: number): boolean {
+  const getSnapshot = useCallback(() => window.scrollY > threshold, [threshold]);
+  return useSyncExternalStore(subscribeScroll, getSnapshot, () => false);
 }

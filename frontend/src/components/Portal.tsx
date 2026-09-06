@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useMounted } from '@/lib/hooks';
 
 /**
  * Renders children into `document.body`.
@@ -16,13 +16,11 @@ import { createPortal } from 'react-dom';
  * z-index number that only works from certain call sites.
  */
 export default function Portal({ children }: { children: React.ReactNode }) {
-  const [mounted, setMounted] = useState(false);
-
   // `document` does not exist during the static export, and the first client
   // render has to match the prerendered output, so the portal opens one tick
   // later. Consumers must tolerate that (see useFocusTrap, which waits for the
   // portalled node to appear).
-  useEffect(() => setMounted(true), []);
+  const mounted = useMounted();
 
   if (!mounted) return null;
   return createPortal(children, document.body);

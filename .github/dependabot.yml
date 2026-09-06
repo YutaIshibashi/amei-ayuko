@@ -12,6 +12,13 @@ updates:
       frontend:
         patterns: ['*']
         update-types: [minor, patch]
+    ignore:
+      # ESLint 10 removed context.getFilename(), which eslint-plugin-react still
+      # calls. eslint-config-next depends on that plugin, so a bump to 10 makes
+      # `eslint .` crash on start — it is blocked upstream, not by this repo.
+      # Remove this entry once eslint-plugin-react ships ESLint 10 support.
+      - dependency-name: eslint
+        update-types: [version-update:semver-major]
 
   - package-ecosystem: npm
     directory: /scraper

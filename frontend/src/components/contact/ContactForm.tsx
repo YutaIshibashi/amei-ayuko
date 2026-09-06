@@ -59,14 +59,16 @@ export default function ContactForm() {
   const [website, setWebsite] = useState('');
 
   const summaryRef = useRef<HTMLDivElement>(null);
-  const fieldRefs = {
-    name: useRef<HTMLInputElement>(null),
-    email: useRef<HTMLInputElement>(null),
-    emailConfirm: useRef<HTMLInputElement>(null),
-    contactTypeId: useRef<HTMLSelectElement>(null),
-    message: useRef<HTMLTextAreaElement>(null),
-    agree: useRef<HTMLInputElement>(null),
-  };
+  // Declared individually rather than gathered into an object: passing
+  // `refs.email` through JSX reads as a ref access during render, and keeping
+  // them separate is what lets the compiler (and the linter) see that the ref
+  // itself is only ever handed to React.
+  const nameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const emailConfirmRef = useRef<HTMLInputElement>(null);
+  const contactTypeRef = useRef<HTMLSelectElement>(null);
+  const messageRef = useRef<HTMLTextAreaElement>(null);
+  const agreeRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     track('view_contact');
@@ -123,12 +125,21 @@ export default function ContactForm() {
 
   /** Moves focus to the first invalid field — required for keyboard use. */
   const focusFirstError = (e: Errors) => {
-    const order: (keyof FormValues)[] = ['name', 'email', 'emailConfirm', 'contactTypeId', 'message', 'agree'];
-    const first = order.find((k) => e[k]);
+    // Built here rather than during render: this only runs from a submit
+    // handler, by which point every ref is attached.
+    const order: [keyof FormValues, React.RefObject<HTMLElement | null>][] = [
+      ['name', nameRef],
+      ['email', emailRef],
+      ['emailConfirm', emailConfirmRef],
+      ['contactTypeId', contactTypeRef],
+      ['message', messageRef],
+      ['agree', agreeRef],
+    ];
+    const first = order.find(([key]) => e[key]);
     if (!first) return;
     requestAnimationFrame(() => {
       summaryRef.current?.focus();
-      fieldRefs[first].current?.focus({ preventScroll: false });
+      first[1].current?.focus({ preventScroll: false });
     });
   };
 
@@ -235,7 +246,7 @@ export default function ContactForm() {
           help={`${MAX_NAME}文字以内`}
         >
           <input
-            ref={fieldRefs.name}
+            ref={nameRef}
             id="field-name"
             className="c-input"
             type="text"
@@ -252,7 +263,7 @@ export default function ContactForm() {
 
         <Field id="field-email" label="メールアドレス" required error={errors.email}>
           <input
-            ref={fieldRefs.email}
+            ref={emailRef}
             id="field-email"
             className="c-input"
             type="email"
@@ -276,7 +287,7 @@ export default function ContactForm() {
           help="お間違いがあるとご返信できません。もう一度ご入力ください。"
         >
           <input
-            ref={fieldRefs.emailConfirm}
+            ref={emailConfirmRef}
             id="field-emailConfirm"
             className="c-input"
             type="email"
@@ -295,7 +306,7 @@ export default function ContactForm() {
 
         <Field id="field-contactTypeId" label="お問い合わせの種別" required error={errors.contactTypeId}>
           <select
-            ref={fieldRefs.contactTypeId}
+            ref={contactTypeRef}
             id="field-contactTypeId"
             className="c-select"
             name="contact_type"
@@ -320,7 +331,7 @@ export default function ContactForm() {
           help={selectedType?.helpText ?? 'ご相談内容をできるだけ具体的にお書きください。'}
         >
           <textarea
-            ref={fieldRefs.message}
+            ref={messageRef}
             id="field-message"
             className="c-textarea"
             name="message"
@@ -356,7 +367,7 @@ export default function ContactForm() {
         <div className="c-field">
           <label className="c-check" htmlFor="field-agree">
             <input
-              ref={fieldRefs.agree}
+              ref={agreeRef}
               id="field-agree"
               type="checkbox"
               checked={values.agree}

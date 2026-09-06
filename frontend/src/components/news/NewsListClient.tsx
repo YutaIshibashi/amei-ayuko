@@ -20,18 +20,26 @@ export default function NewsListClient() {
   const searchParams = useSearchParams();
   const page = Math.max(1, Number(searchParams.get('page') ?? '1') || 1);
 
-  const [data, setData] = useState<NewsListResponse | null>(null);
-  const [failed, setFailed] = useState(false);
+  // The page number is stored alongside the result, so a response that belongs
+  // to a previous page is simply ignored on render. That removes the need to
+  // blank the state from inside the effect when the page changes.
+  const [result, setResult] = useState<
+    { page: number; data: NewsListResponse | null; failed: boolean } | null
+  >(null);
 
   useEffect(() => {
-    setData(null);
-    setFailed(false);
     const ac = new AbortController();
     fetchNewsList(page, ac.signal)
-      .then(setData)
-      .catch(() => { if (!ac.signal.aborted) setFailed(true); });
+      .then((data) => setResult({ page, data, failed: false }))
+      .catch(() => {
+        if (!ac.signal.aborted) setResult({ page, data: null, failed: true });
+      });
     return () => ac.abort();
   }, [page]);
+
+  const current = result?.page === page ? result : null;
+  const data = current?.data ?? null;
+  const failed = current?.failed ?? false;
 
   return (
     <section className="l-section l-section--paper" style={{ paddingTop: 'var(--s-5)' }}>
