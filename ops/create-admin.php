@@ -13,9 +13,20 @@ declare(strict_types=1);
  * against the same database.
  */
 
-// Repository layout: the app dir is backend/, not the deployed _app/.
-putenv('AMEI_APP_DIR=' . (getenv('AMEI_APP_DIR') ?: dirname(__DIR__) . '/backend'));
-require_once (getenv('AMEI_APP_DIR')) . '/bootstrap.php';
+/**
+ * Works from either layout without being told which:
+ *   repository … ops/            → app dir is ../backend
+ *   deployed   … _app/ops/       → app dir is ..
+ * AMEI_APP_DIR still wins if it is set explicitly.
+ */
+$appDir = getenv('AMEI_APP_DIR') ?: null;
+if ($appDir === null) {
+    $deployed = dirname(__DIR__);                 // _app/
+    $repo = dirname(__DIR__) . '/backend';        // backend/
+    $appDir = is_file($deployed . '/bootstrap.php') ? $deployed : $repo;
+}
+putenv('AMEI_APP_DIR=' . $appDir);
+require_once $appDir . '/bootstrap.php';
 
 use Amei\Database;
 
