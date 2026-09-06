@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import Intro from '@/components/Intro';
 import SiteChrome from '@/components/SiteChrome';
 import { SITE } from '@/lib/site';
 import '@/styles/globals.css';
@@ -20,6 +21,30 @@ const GOOGLE_FONTS_HREF =
   '?family=Zen+Maru+Gothic:wght@500;700' +
   '&family=Caveat:wght@400..600' +
   '&display=swap';
+
+/**
+ * Inlined into <head>. Kept small and dependency-free on purpose: it runs
+ * before first paint, so anything slow here is felt directly.
+ */
+const BOOT_SCRIPT = `
+(function () {
+  var root = document.documentElement;
+  root.classList.remove('no-js');
+  try {
+    var KEY = 'amei.intro.v1';
+    var path = location.pathname;
+    var isHome = path === '/' || path === '/index.html';
+    if (isHome && !sessionStorage.getItem(KEY)) {
+      sessionStorage.setItem(KEY, '1');
+    } else {
+      root.setAttribute('data-intro', 'skip');
+    }
+  } catch (e) {
+    // Storage disabled (private mode, blocked cookies): show it and move on.
+    // Playing once per load is a better failure than never playing at all.
+  }
+})();
+`.trim();
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
@@ -85,16 +110,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="stylesheet" href={GOOGLE_FONTS_HREF} />
         {/*
-          Marks the document as JS-capable before first paint. CSS uses `.no-js`
-          to keep scroll-reveal content visible when scripts fail to run.
+          Runs before first paint, and does two things:
+
+          1. Marks the document as JS-capable. CSS uses `.no-js` to keep
+             scroll-reveal content visible when scripts fail to run.
+          2. Decides whether the opening animation should play *this* document
+             load — top page only, once per session. Deciding here rather than
+             in React is what prevents a flash of the overlay on a repeat
+             visit: the class is on <html> before anything is painted.
+
+          The script never removes the overlay; that is the animation's job
+          (see intro.css), so a bundle failure cannot leave the page covered.
         */}
         <script
-          dangerouslySetInnerHTML={{
-            __html: `document.documentElement.classList.remove('no-js');`,
-          }}
+          dangerouslySetInnerHTML={{ __html: BOOT_SCRIPT }}
         />
       </head>
       <body>
+        <Intro />
         <SiteChrome>{children}</SiteChrome>
       </body>
     </html>
