@@ -41,3 +41,6 @@ Thumbs.db
 # Runtime data (written on the server, never committed)
 /backend/public/uploads/
 /backend/public/products/
+
+# Scratch
+*.tsbuildinfo
