@@ -21,7 +21,7 @@ declare(strict_types=1);
 $root = dirname(__DIR__, 2);
 putenv('AMEI_APP_DIR=' . $root . '/backend');
 putenv('AMEI_WEB_ROOT=' . $root . '/frontend/out');
-putenv('SITE_URL=https://amei-ayuko.com');
+putenv('SITE_URL=https://amei-ayuko.jp');
 
 require $root . '/backend/bootstrap.php';
 
@@ -64,21 +64,21 @@ $product = [
         ['thumb' => '/products/1001/01-thumb.webp', 'large' => '/products/1001/01-large.webp'],
     ],
 ];
-$productCanonical = 'https://amei-ayuko.com/shop/?category=album-flake&product=1001';
+$productCanonical = 'https://amei-ayuko.jp/shop/?category=album-flake&product=1001';
 
 $productHtml = Seo::inject($shopShell, [
     'title'       => 'アルバムフレーク はじめての1年｜アルバムフレーク | amei ayuko',
     'description' => '手描きのアルバムフレーク。育児アルバムや成長記録づくりに。',
     'canonical'   => $productCanonical,
     'ogType'      => 'product',
-    'ogImage'     => 'https://amei-ayuko.com/products/1001/00-large.webp',
+    'ogImage'     => 'https://amei-ayuko.jp/products/1001/00-large.webp',
     'noscript'    => '<article><h1>アルバムフレーク はじめての1年</h1></article>',
     'jsonLd'      => [
         Seo::productJsonLd($product, $productCanonical),
         Seo::breadcrumbJsonLd([
-            ['name' => 'ホーム', 'url' => 'https://amei-ayuko.com/'],
-            ['name' => 'オンラインショップ', 'url' => 'https://amei-ayuko.com/shop/'],
-            ['name' => 'アルバムフレーク', 'url' => 'https://amei-ayuko.com/shop/?category=album-flake'],
+            ['name' => 'ホーム', 'url' => 'https://amei-ayuko.jp/'],
+            ['name' => 'オンラインショップ', 'url' => 'https://amei-ayuko.jp/shop/'],
+            ['name' => 'アルバムフレーク', 'url' => 'https://amei-ayuko.jp/shop/?category=album-flake'],
         ]),
     ],
 ]);
@@ -93,7 +93,7 @@ check('product: single og:image', substr_count($productHtml, 'property="og:image
 check('product: title is the product', str_contains($productHtml, '<title>アルバムフレーク はじめての1年｜'));
 check('product: canonical is the product URL', str_contains(
     $productHtml,
-    'href="https://amei-ayuko.com/shop/?category=album-flake&amp;product=1001"',
+    'href="https://amei-ayuko.jp/shop/?category=album-flake&amp;product=1001"',
 ));
 check('product: og:type is product', str_contains($productHtml, '<meta property="og:type" content="product">'));
 check('product: twitter card', str_contains($productHtml, 'name="twitter:card" content="summary_large_image"'));
@@ -133,26 +133,26 @@ $article = [
     'content_updated_at' => '2026-08-05 12:30:00',
     'image_path'         => '/uploads/news/20260801-abc.webp',
 ];
-$newsCanonical = 'https://amei-ayuko.com/news/123';
+$newsCanonical = 'https://amei-ayuko.jp/news/123';
 
 $newsHtml = Seo::inject($newsShell, [
     'title'       => '新作のアルバムフレークができました | amei ayuko',
     'description' => '新しいアルバムフレークができました。',
     'canonical'   => $newsCanonical,
     'ogType'      => 'article',
-    'ogImage'     => 'https://amei-ayuko.com/uploads/news/20260801-abc.webp',
+    'ogImage'     => 'https://amei-ayuko.jp/uploads/news/20260801-abc.webp',
     'jsonLd'      => [
         Seo::articleJsonLd($article, $newsCanonical),
         Seo::breadcrumbJsonLd([
-            ['name' => 'ホーム',   'url' => 'https://amei-ayuko.com/'],
-            ['name' => 'お知らせ', 'url' => 'https://amei-ayuko.com/news/'],
+            ['name' => 'ホーム',   'url' => 'https://amei-ayuko.jp/'],
+            ['name' => 'お知らせ', 'url' => 'https://amei-ayuko.jp/news/'],
             ['name' => '新作のアルバムフレークができました', 'url' => $newsCanonical],
         ]),
     ],
 ]);
 
 check('news: single <title>', substr_count($newsHtml, '<title>') === 1);
-check('news: canonical is /news/123', str_contains($newsHtml, 'href="https://amei-ayuko.com/news/123"'));
+check('news: canonical is /news/123', str_contains($newsHtml, 'href="https://amei-ayuko.jp/news/123"'));
 check('news: og:type is article', str_contains($newsHtml, '<meta property="og:type" content="article">'));
 check('news: NewsArticle JSON-LD', str_contains($newsHtml, '"@type":"NewsArticle"'));
 check('news: author is amei ayuko', str_contains($newsHtml, '"author":{"@type":"Person","name":"amei ayuko"}'));

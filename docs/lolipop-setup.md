@@ -17,13 +17,23 @@
 
 | 項目 | 決めた値 | 備考 |
 |---|---|---|
-| 公開ドメイン | | 独自ドメイン or ロリポップのサブドメイン |
+| 公開ドメイン | **`amei-ayuko.jp`** | 決定済み。コード側の既定値も反映済み |
 | 公開フォルダ名 | | 例：`amei-ayuko`。ドキュメントルートになります |
 | 管理画面のユーザー名 | | 1ユーザーのみ。あとから変更可 |
 | 問い合わせ受信アドレス | | 管理者通知の宛先 |
 
-ドメインが決まらないと `SITE_URL` が確定せず、OGPとcanonicalが正しくなりません。
-**最初に決めてください。**
+ドメインは `amei-ayuko.jp` で確定しています。コード内の既定値、`robots.txt` の
+Sitemap URL、CIのフォールバック値もこの値に更新済みです。
+
+**別のドメインに変更する場合は、以下をすべて書き換えてください。**
+
+| 場所 | 内容 |
+|---|---|
+| GitHub Variables `SITE_URL` | 実行時に使われる値（最優先） |
+| `_app/.env` の `SITE_URL` | PHP側（canonical・OGP・sitemap） |
+| `frontend/public/robots.txt` | Sitemap行（静的ファイルのため手動） |
+| `frontend/src/lib/site.ts` | 環境変数が無いときの既定値 |
+| `backend/src/Config.php` | 同上（PHP側） |
 
 ---
 
@@ -92,7 +102,7 @@ ssh -i ~/.ssh/amei-deploy -p <ポート> <アカウント名>@<サーバー>
 
 問い合わせフォームの送信に使います。**PHPの `mail()` は使いません。**
 
-1. 送信用のメールアカウントを作成（例：`info@<ドメイン>`）
+1. 送信用のメールアカウントを作成（例：`info@amei-ayuko.jp`）
 2. SMTP情報を控える
 
 | キー | 値 |
@@ -185,7 +195,7 @@ DNSのTXTレコード方式でも確認できます。その場合はこの設�
 
 | 名前 | 値 |
 |---|---|
-| `SITE_URL` | `https://<ドメイン>`（末尾スラッシュなし） |
+| `SITE_URL` | `https://amei-ayuko.jp`（末尾スラッシュなし） |
 | `MINNE_SHOP_URL` | `https://minne.com/@amei-ayuko` |
 | `TURNSTILE_SITE_KEY` | Turnstile の Site Key |
 
@@ -300,7 +310,7 @@ php _app/ops/migrate.php status
 
 ### 動作確認
 
-- [ ] `https://<ドメイン>/` が表示される（HTTPでアクセスするとHTTPSへ301）
+- [ ] `https://amei-ayuko.jp/` が表示される（HTTPでアクセスするとHTTPSへ301）
 - [ ] オープニングアニメーションが再生され、1.35秒後にヒーローが見える
 - [ ] `/shop/` でタブが切り替わる（商品は同期前なので0件でOK）
 - [ ] `/news/` `/about/` `/contact/` `/privacy-policy/` が表示される
@@ -320,15 +330,15 @@ php _app/ops/migrate.php status
 
 ### SEO
 
-- [ ] `https://<ドメイン>/sitemap.xml` が生成される
-- [ ] `https://<ドメイン>/robots.txt` が返る
+- [ ] `https://amei-ayuko.jp/sitemap.xml` が生成される
+- [ ] `https://amei-ayuko.jp/robots.txt` が返る
 - [ ] 商品URL（`/shop/?category=...&product=...`）のソースに
       商品名のtitleと Product JSON-LD が入っている
 - [ ] `/news/{id}` のソースに記事のtitleと NewsArticle JSON-LD が入っている
 
 ```bash
 # コマンドで確認する例
-curl -s "https://<ドメイン>/shop/?category=album-flake&product=<商品ID>" \
+curl -s "https://amei-ayuko.jp/shop/?category=album-flake&product=<商品ID>" \
   | grep -oE "<title>[^<]*|\"@type\":\"Product\""
 ```
 

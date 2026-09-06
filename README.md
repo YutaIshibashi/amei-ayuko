@@ -231,7 +231,7 @@ cp frontend/.env.example frontend/.env.local   # フロント側（公開値の�
 ### frontend/.env.local（公開値のみ）
 
 ```
-NEXT_PUBLIC_SITE_URL=https://amei-ayuko.com
+NEXT_PUBLIC_SITE_URL=https://amei-ayuko.jp
 NEXT_PUBLIC_API_BASE=/api
 NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAA…      # Site Key（公開されて問題ない値）
 ```
@@ -246,7 +246,7 @@ NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAA…      # Site Key（公開されて問題
 | Secret | `LOLIPOP_SSH_KEY` | デプロイ用の秘密鍵（ed25519） |
 | Secret | `LOLIPOP_SSH_HOST` / `LOLIPOP_SSH_USER` / `LOLIPOP_SSH_PORT` | SSH接続情報 |
 | Secret | `LOLIPOP_REMOTE_PATH` | 例：`/home/users/1/xxxx/web` |
-| Variable | `SITE_URL` | 例：`https://amei-ayuko.com` |
+| Variable | `SITE_URL` | 例：`https://amei-ayuko.jp` |
 | Variable | `MINNE_SHOP_URL` | 例：`https://minne.com/@amei-ayuko` |
 | Variable | `TURNSTILE_SITE_KEY` | ビルド時に埋め込むSite Key |
 
