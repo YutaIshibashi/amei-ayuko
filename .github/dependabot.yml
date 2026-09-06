@@ -19,6 +19,13 @@ updates:
       # Remove this entry once eslint-plugin-react ships ESLint 10 support.
       - dependency-name: eslint
         update-types: [version-update:semver-major]
+      # typescript-eslint supports `typescript >=4.8.4 <6.1.0`; on TS 7 it
+      # refuses to load and `eslint .` cannot start. The scraper and e2e
+      # packages have no ESLint, so they stay on 7 — this pin is frontend-only.
+      # Remove once typescript-eslint ships TS 7 support
+      # (typescript-eslint/typescript-eslint#10940).
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
 
   - package-ecosystem: npm
     directory: /scraper
