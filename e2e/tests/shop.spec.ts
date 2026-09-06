@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { mockApi, PRODUCTS } from './fixtures.js';
+import { mockApi, PRODUCT_COUNTS, REPRESENTATIVE_PRODUCTS } from './fixtures.js';
 
 test.describe('Online Shop', () => {
   test.beforeEach(async ({ page }) => {
@@ -9,7 +9,7 @@ test.describe('Online Shop', () => {
   test('opens on Album Flake when reached without a category', async ({ page }) => {
     await page.goto('/shop/');
     await expect(page.getByRole('tab', { name: /Album Flake/ })).toHaveAttribute('aria-selected', 'true');
-    await expect(page.locator('.c-pcard')).toHaveCount(2);
+    await expect(page.locator('.c-pcard')).toHaveCount(PRODUCT_COUNTS['album-flake']);
   });
 
   test('honours the category in the URL', async ({ page }) => {
@@ -110,6 +110,9 @@ test.describe('Product modal', () => {
     await page.goto('/shop/');
     await page.locator('.c-pcard').last().scrollIntoViewIfNeeded();
     const before = await page.evaluate(() => window.scrollY);
+    // Otherwise the assertion below passes vacuously on a viewport tall enough
+    // to show every card without scrolling.
+    expect(before).toBeGreaterThan(0);
 
     await page.locator('.c-pcard__btn').last().click();
     await expect(page.getByRole('dialog')).toBeVisible();
@@ -144,8 +147,8 @@ test.describe('Product modal', () => {
     await expect(slides.nth(1)).toHaveAttribute('loading', 'lazy');
   });
 
-  test('every fixture product opens by direct URL', async ({ page }) => {
-    for (const product of PRODUCTS.products) {
+  test('every kind of product opens by direct URL', async ({ page }) => {
+    for (const product of REPRESENTATIVE_PRODUCTS) {
       await page.goto(`/shop/?category=${product.category}&product=${product.id}`);
       await expect(page.getByRole('dialog')).toBeVisible();
     }

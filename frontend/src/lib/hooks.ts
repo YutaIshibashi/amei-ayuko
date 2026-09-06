@@ -60,14 +60,23 @@ export function useScrollLock(active: boolean): void {
 
     return () => {
       lockCount -= 1;
-      if (lockCount === 0) {
-        body.style.position = '';
-        body.style.top = '';
-        body.style.width = '';
-        body.style.paddingRight = '';
-        body.classList.remove('is-locked');
-        window.scrollTo(0, savedScrollY);
-      }
+      if (lockCount !== 0) return;
+
+      const target = savedScrollY;
+
+      body.style.position = '';
+      body.style.top = '';
+      body.style.width = '';
+      body.style.paddingRight = '';
+      body.classList.remove('is-locked');
+
+      // `behavior: 'instant'` is essential, not a micro-optimisation: the
+      // stylesheet sets `scroll-behavior: smooth` globally for in-page anchors,
+      // and a plain scrollTo() inherits it. The page then *animates* from the
+      // top back to the card over several hundred milliseconds — which looks
+      // like the modal dumped the visitor at the top of the shop, and is
+      // exactly what it feels like on a long product grid.
+      window.scrollTo({ top: target, left: 0, behavior: 'instant' });
     };
   }, [active]);
 }
