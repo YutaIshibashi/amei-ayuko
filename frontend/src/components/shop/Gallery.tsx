@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ProductImage } from '@/lib/types';
 import { IconArrowLeft, IconArrowRight, IconClose } from '../Icons';
+import Portal from '../Portal';
 
 /**
  * Product image gallery.
@@ -150,6 +151,7 @@ export default function Gallery({ images, alt }: { images: ProductImage[]; alt: 
       ) : null}
 
       {zoomImage ? (
+        <Portal>
         <div
           className="c-lightbox"
           role="dialog"
@@ -173,6 +175,7 @@ export default function Gallery({ images, alt }: { images: ProductImage[]; alt: 
             decoding="async"
           />
         </div>
+        </Portal>
       ) : null}
     </div>
   );

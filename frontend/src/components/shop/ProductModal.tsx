@@ -8,6 +8,7 @@ import { categoryOf, SITE } from '@/lib/site';
 import type { Product } from '@/lib/types';
 import { Flower, Sparkle, WaveLine } from '../Deco';
 import { IconClose, IconExternal, IconShop } from '../Icons';
+import Portal from '../Portal';
 import ShareButtons from '../ShareButtons';
 import Gallery from './Gallery';
 
@@ -76,6 +77,7 @@ export default function ProductModal({
   };
 
   return (
+    <Portal>
     <div className={`c-modal ${closing ? 'is-closing' : ''}`} role="presentation">
       <button type="button" className="c-modal__backdrop" aria-label="閉じる" onClick={requestClose} />
 
@@ -179,5 +181,6 @@ export default function ProductModal({
         </div>
       </div>
     </div>
+    </Portal>
   );
 }

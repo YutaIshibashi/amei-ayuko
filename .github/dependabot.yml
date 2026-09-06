@@ -1,0 +1,40 @@
+version: 2
+
+# Weekly, grouped, and limited: this is a small site, and a flood of individual
+# dependency PRs would just be noise. Security updates still arrive immediately
+# through GitHub's own security alerts.
+updates:
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule: { interval: weekly, day: monday, time: '09:00', timezone: Asia/Tokyo }
+    open-pull-requests-limit: 3
+    groups:
+      frontend:
+        patterns: ['*']
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /scraper
+    schedule: { interval: weekly, day: monday, time: '09:00', timezone: Asia/Tokyo }
+    open-pull-requests-limit: 2
+    groups:
+      scraper:
+        patterns: ['*']
+
+  - package-ecosystem: npm
+    directory: /e2e
+    schedule: { interval: monthly }
+    open-pull-requests-limit: 1
+    groups:
+      e2e:
+        patterns: ['*']
+
+  - package-ecosystem: composer
+    directory: /backend
+    schedule: { interval: weekly, day: monday, time: '09:00', timezone: Asia/Tokyo }
+    open-pull-requests-limit: 2
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: monthly }
+    open-pull-requests-limit: 1

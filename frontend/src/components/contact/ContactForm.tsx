@@ -9,6 +9,7 @@ import { useFocusTrap, useScrollLock, useSettings } from '@/lib/hooks';
 import { INSTAGRAM_URL, SITE, TURNSTILE_SITE_KEY } from '@/lib/site';
 import type { ContactType } from '@/lib/types';
 import { IconAlert, IconArrowRight, IconMail } from '../Icons';
+import Portal from '../Portal';
 import Turnstile from './Turnstile';
 
 const MAX_NAME = 100;
@@ -186,11 +187,15 @@ export default function ContactForm() {
     <>
       <form className="c-form" noValidate onSubmit={onReview}>
         {/* Error summary: announced, focusable, and links into the fields. */}
+        {/* Named so assistive tech announces what this region is, and so it
+            is addressable independently of the router's own live region. */}
         <div
           ref={summaryRef}
+          id="contact-error-summary"
           tabIndex={-1}
           role="alert"
           aria-live="assertive"
+          aria-label="入力内容のエラー"
           style={{ outline: 'none' }}
         >
           {errors.form || errorList.length > 0 ? (
@@ -454,6 +459,7 @@ function ConfirmDialog({
   useFocusTrap(panelRef, true, sending ? undefined : onBack);
 
   return (
+    <Portal>
     <div className="c-dialog" role="presentation">
       <button type="button" className="c-modal__backdrop" aria-label="閉じる" onClick={sending ? undefined : onBack} />
       <div
@@ -484,6 +490,7 @@ function ConfirmDialog({
         </p>
       </div>
     </div>
+    </Portal>
   );
 }
 

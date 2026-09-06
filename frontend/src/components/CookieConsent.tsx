@@ -14,6 +14,7 @@ import {
 import { track } from '@/lib/analytics';
 import { useFocusTrap } from '@/lib/hooks';
 import { IconCheck, IconClose } from './Icons';
+import Portal from './Portal';
 
 /**
  * Bottom cookie banner.
@@ -105,6 +106,7 @@ export function CookieSettingsModal({
   };
 
   return (
+    <Portal>
     <div className="c-dialog" role="presentation">
       <button
         type="button"
@@ -173,5 +175,6 @@ export function CookieSettingsModal({
         </div>
       </div>
     </div>
+    </Portal>
   );
 }

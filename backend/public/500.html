@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>エラーが発生しました | amei ayuko</title>
+<!--
+  Deliberately standalone: no bundle, no webfont, no external request. This
+  page is shown when something has already gone wrong, so it must not depend
+  on anything that could be the thing that broke.
+-->
+<style>
+  :root { color-scheme: light; }
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: 2rem 1.25rem;
+    background:
+      radial-gradient(90% 70% at 50% 0%, rgba(242, 193, 78, .16), transparent 60%),
+      #fff7ef;
+    color: #4a3f3a;
+    font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', Meiryo, sans-serif;
+    line-height: 1.9;
+    text-align: center;
+  }
+  .inner { display: grid; justify-items: center; gap: 1rem; max-width: 34rem; }
+  svg { width: min(220px, 60vw); height: auto; }
+  h1 { margin: 0; font-size: 1.35rem; letter-spacing: .04em; }
+  p { margin: 0; font-size: .9rem; color: #7b6d66; }
+  .links { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; margin-top: .5rem; }
+  a {
+    display: inline-flex; align-items: center; min-height: 48px;
+    padding: .75rem 1.5rem; border-radius: 999px;
+    background: #e8836b; color: #fff; font-weight: 700; font-size: .9rem;
+    text-decoration: none;
+  }
+  a.ghost { background: transparent; color: #4a3f3a; border: 2px solid #ddcec0; }
+  a:focus-visible { outline: 3px solid #e8836b; outline-offset: 3px; }
+</style>
+</head>
+<body>
+  <div class="inner">
+    <svg viewBox="0 0 400 320" aria-hidden="true" focusable="false">
+      <ellipse cx="200" cy="288" rx="120" ry="16" fill="#ddcec0" opacity=".5"/>
+      <g transform="translate(110 60)">
+        <rect width="180" height="200" rx="16" fill="#fffdfa" stroke="#ddcec0" stroke-width="5" transform="rotate(-5)"/>
+        <g transform="rotate(-5)">
+          <path d="M56 96c10-26 24-34 34-34s22 10 30 34" fill="none" stroke="#e8836b" stroke-width="8" stroke-linecap="round"/>
+          <circle cx="66" cy="132" r="7" fill="#4a3f3a"/>
+          <circle cx="116" cy="132" r="7" fill="#4a3f3a"/>
+          <path d="M70 172c14-10 34-10 46 0" fill="none" stroke="#4a3f3a" stroke-width="7" stroke-linecap="round"/>
+        </g>
+      </g>
+      <path d="M320 60c5 18 16 29 34 34-18 5-29 16-34 34-5-18-16-29-34-34 18-5 29-16 34-34Z" fill="#f2c14e"/>
+    </svg>
+
+    <h1>エラーが発生しました</h1>
+    <p>
+      申し訳ありません。一時的な問題が起きています。<br>
+      お手数ですが、時間をおいて再度お試しください。
+    </p>
+    <div class="links">
+      <a href="/">ホームへ</a>
+      <a class="ghost" href="/shop/">オンラインショップ</a>
+      <a class="ghost" href="https://www.instagram.com/amei_ayuko/" target="_blank" rel="noopener noreferrer">Instagram</a>
+    </div>
+  </div>
+</body>
+</html>

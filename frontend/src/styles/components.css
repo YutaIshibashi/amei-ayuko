@@ -451,7 +451,7 @@
 .c-cookie {
   position: fixed;
   left: 0; right: 0; bottom: 0;
-  z-index: var(--z-toast);
+  z-index: var(--z-cookie);
   padding: var(--s-4) var(--s-5) max(var(--s-4), env(safe-area-inset-bottom));
   background: rgba(255, 253, 250, 0.97);
   backdrop-filter: blur(8px);
@@ -480,7 +480,7 @@
   position: fixed;
   right: var(--s-4);
   bottom: var(--s-4);
-  z-index: var(--z-toast);
+  z-index: var(--z-badge);
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);

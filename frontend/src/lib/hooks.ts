@@ -80,16 +80,28 @@ export function useFocusTrap(
 
   useEffect(() => {
     if (!active) return;
-    const node = ref.current;
-    if (!node) return;
 
     returnFocusTo.current = document.activeElement as HTMLElement | null;
 
-    // Move focus in on the next frame, once the panel has been painted.
-    const raf = requestAnimationFrame(() => {
+    // The panel is usually portalled to <body>, which mounts a tick after this
+    // effect runs — so wait for the node to appear rather than giving up on
+    // the first miss. Without this, Escape and Tab trapping silently do
+    // nothing for every portalled dialog.
+    let raf = 0;
+    let attempts = 0;
+    const focusFirst = (): void => {
+      const node = ref.current;
+      if (!node) {
+        if (attempts < 30) {
+          attempts += 1;
+          raf = requestAnimationFrame(focusFirst);
+        }
+        return;
+      }
       const first = node.querySelector<HTMLElement>(FOCUSABLE);
       (first ?? node).focus({ preventScroll: true });
-    });
+    };
+    raf = requestAnimationFrame(focusFirst);
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -98,6 +110,9 @@ export function useFocusTrap(
         return;
       }
       if (e.key !== 'Tab') return;
+
+      const node = ref.current;
+      if (!node) return;
 
       const items = Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
         (el) => el.offsetParent !== null || el === document.activeElement,

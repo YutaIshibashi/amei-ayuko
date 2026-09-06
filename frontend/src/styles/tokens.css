@@ -97,8 +97,13 @@
   --dur-mid:  320ms;
   --dur-slow: 620ms;
 
+  /* Stacking order, lowest first. Persistent chrome (the cookie banner, the
+     analytics badge) sits BELOW modals: a modal is a focused task, and on a
+     small screen a bottom-anchored banner otherwise covers its buttons. */
   --z-header: 100;
   --z-menu:   200;
+  --z-cookie: 250;
+  --z-badge:  260;
   --z-modal:  300;
   --z-toast:  400;
 }
