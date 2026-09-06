@@ -26,6 +26,10 @@
 - [Backup](#backup)
 - [Troubleshooting](#troubleshooting)
 
+> **サーバーを契約したばかりの場合は
+> [ロリポップ！初期セットアップ手順](docs/lolipop-setup.md) を先に読んでください。**
+> 契約直後から公開までの作業を、実施順のチェックリストにまとめてあります。
+
 ---
 
 ## Architecture
@@ -227,7 +231,7 @@ cp frontend/.env.example frontend/.env.local   # フロント側（公開値の�
 ### frontend/.env.local（公開値のみ）
 
 ```
-NEXT_PUBLIC_SITE_URL=https://amei-ayuko.com
+NEXT_PUBLIC_SITE_URL=https://amei-ayuko.jp
 NEXT_PUBLIC_API_BASE=/api
 NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAA…      # Site Key（公開されて問題ない値）
 ```
@@ -242,7 +246,7 @@ NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAA…      # Site Key（公開されて問題
 | Secret | `LOLIPOP_SSH_KEY` | デプロイ用の秘密鍵（ed25519） |
 | Secret | `LOLIPOP_SSH_HOST` / `LOLIPOP_SSH_USER` / `LOLIPOP_SSH_PORT` | SSH接続情報 |
 | Secret | `LOLIPOP_REMOTE_PATH` | 例：`/home/users/1/xxxx/web` |
-| Variable | `SITE_URL` | 例：`https://amei-ayuko.com` |
+| Variable | `SITE_URL` | 例：`https://amei-ayuko.jp` |
 | Variable | `MINNE_SHOP_URL` | 例：`https://minne.com/@amei-ayuko` |
 | Variable | `TURNSTILE_SITE_KEY` | ビルド時に埋め込むSite Key |
 
@@ -367,6 +371,7 @@ web/
 ├─ uploads/       755  記事画像・メインビジュアル
 └─ _app/          Web非公開
     ├─ .env       600  ★手動で配置（Gitにもデプロイにも含めません）
+    ├─ ops/            管理者作成・マイグレーション確認（SSHから実行）
     └─ storage/   750  logs / sync / cache
 ```
 
@@ -531,10 +536,20 @@ rm ~/web/maintenance.flag
 管理者は1ユーザーのみ、パスワードリセットUIはありません。
 忘れた場合は開発者が再設定します。
 
+**サーバー上のSSHで実行します。** ロリポップのMySQLホストは内部からしか
+到達できないため、手元のPCからは接続できません。
+
 ```bash
-# サーバー上（推奨）、または同じDBに接続できるローカルから
+ssh -p <ポート> <アカウント>@<サーバー>
+cd <公開フォルダ>
+php _app/ops/create-admin.php <ユーザー名>
+# パスワードは標準入力から読み取ります（引数に書くとシェル履歴と ps に残るため）
+```
+
+ローカル開発用のDBに対しては、リポジトリ側のパスでも同じことができます。
+
+```bash
 php ops/create-admin.php <ユーザー名>
-# パスワードは標準入力から読み取ります（引数に書くとシェル履歴に残るため）
 ```
 
 既存ユーザー名を指定するとパスワードのみ更新し、ログイン失敗回数の

@@ -43,7 +43,7 @@ jobs:
       - name: Build (static export)
         working-directory: frontend
         env:
-          NEXT_PUBLIC_SITE_URL: ${{ vars.SITE_URL || 'https://amei-ayuko.com' }}
+          NEXT_PUBLIC_SITE_URL: ${{ vars.SITE_URL || 'https://amei-ayuko.jp' }}
           NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.TURNSTILE_SITE_KEY }}
         run: npm run build
 

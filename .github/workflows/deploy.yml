@@ -107,6 +107,15 @@ jobs:
           cp -R backend/templates "$RELEASE/_app/templates"
           cp -R backend/vendor "$RELEASE/_app/vendor"
 
+          # CLI tooling, inside _app/ rather than the web root: Apache denies
+          # that directory, so the scripts are reachable over SSH and not over
+          # HTTP. They have to live on the server because Lolipop's MySQL host
+          # is internal — production cannot be reached from a laptop.
+          # Only the two operational scripts ship; the local dev server does
+          # not belong in production.
+          mkdir -p "$RELEASE/_app/ops"
+          cp ops/create-admin.php ops/migrate.php "$RELEASE/_app/ops/"
+
           # Writable runtime directories. Nothing in them is deployed; the
           # rsync excludes below keep the server's copies untouched.
           mkdir -p "$RELEASE/_app/storage/logs" \

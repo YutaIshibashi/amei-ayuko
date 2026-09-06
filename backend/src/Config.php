@@ -97,7 +97,7 @@ final class Config
     /** Absolute site origin, without a trailing slash. */
     public static function siteUrl(): string
     {
-        return rtrim(self::get('SITE_URL', 'https://amei-ayuko.com') ?? '', '/');
+        return rtrim(self::get('SITE_URL', 'https://amei-ayuko.jp') ?? '', '/');
     }
 
     public static function isProduction(): bool
