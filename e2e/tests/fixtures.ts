@@ -60,16 +60,44 @@ function product(id: string, name: string, category: 'album-flake' | 'stamp', pr
   };
 }
 
+/**
+ * The four products the assertions name, plus filler.
+ *
+ * The filler is not padding for its own sake: with only two cards per category
+ * the grid fits on a desktop viewport without scrolling, which silently made
+ * the scroll-restoration test vacuous. There has to be enough here to scroll
+ * at every viewport the suite runs.
+ */
+const NAMED_PRODUCTS = [
+  product('1001', 'アルバムフレーク はじめての1年', 'album-flake', 880, 3),
+  product('1002', 'アルバムフレーク 成長きろく', 'album-flake', 780),
+  product('2001', 'ラバースタンプ おなまえ', 'stamp', 1580),
+  product('2002', 'ラバースタンプ きょうのきぶん', 'stamp', 1280),
+];
+
+const FILLER_PRODUCTS = [
+  ...Array.from({ length: 10 }, (_, i) =>
+    product(`1${String(100 + i)}`, `アルバムフレーク テスト${i + 1}`, 'album-flake', 800 + i * 10),
+  ),
+  ...Array.from({ length: 10 }, (_, i) =>
+    product(`2${String(100 + i)}`, `ラバースタンプ テスト${i + 1}`, 'stamp', 1200 + i * 10),
+  ),
+];
+
 export const PRODUCTS = {
   generatedAt: '2026-09-01T00:00:00+09:00',
   syncId: 'e2e',
-  products: [
-    product('1001', 'アルバムフレーク はじめての1年', 'album-flake', 880, 3),
-    product('1002', 'アルバムフレーク 成長きろく', 'album-flake', 780),
-    product('2001', 'ラバースタンプ おなまえ', 'stamp', 1580),
-    product('2002', 'ラバースタンプ きょうのきぶん', 'stamp', 1280),
-  ],
+  products: [...NAMED_PRODUCTS, ...FILLER_PRODUCTS],
 };
+
+/** Derived so the specs never hard-code a count that the fixture can drift from. */
+export const PRODUCT_COUNTS = {
+  'album-flake': PRODUCTS.products.filter((p) => p.category === 'album-flake').length,
+  stamp: PRODUCTS.products.filter((p) => p.category === 'stamp').length,
+} as const;
+
+/** A small representative slice, for tests that would otherwise loop over all of them. */
+export const REPRESENTATIVE_PRODUCTS = NAMED_PRODUCTS;
 
 export const NEWS_ITEMS = Array.from({ length: 23 }, (_, i) => ({
   id: 100 + i,
