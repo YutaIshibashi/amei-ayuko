@@ -1,12 +1,20 @@
-import { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { FlatCompat } from '@eslint/eslintrc';
+import nextCoreWebVitals from 'eslint-config-next/core-web-vitals';
+import nextTypeScript from 'eslint-config-next/typescript';
 
-const compat = new FlatCompat({ baseDirectory: dirname(fileURLToPath(import.meta.url)) });
+/**
+ * ESLint flat config.
+ *
+ * eslint-config-next 16 ships native flat configs, so the FlatCompat shim (and
+ * the `@eslint/eslintrc` dependency behind it) is gone — these are imported
+ * directly. Linting runs through the ESLint CLI: `next lint` was removed in
+ * Next.js 16.
+ */
+const config = [
+  { ignores: ['out/**', '.next/**', 'node_modules/**', 'next-env.d.ts'] },
 
-export default [
-  { ignores: ['out/**', '.next/**', 'node_modules/**'] },
-  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+  ...nextCoreWebVitals,
+  ...nextTypeScript,
+
   {
     rules: {
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
@@ -18,3 +26,5 @@ export default [
     },
   },
 ];
+
+export default config;

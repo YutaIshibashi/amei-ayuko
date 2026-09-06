@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ASSETS, NAV, SITE } from '@/lib/site';
-import { useFocusTrap, useScrollLock } from '@/lib/hooks';
+import { useFocusTrap, useScrolledPast, useScrollLock } from '@/lib/hooks';
 import { Flower, Heart, Sparkle } from './Deco';
 import { IconArrowRight, IconShop } from './Icons';
 
@@ -18,33 +18,13 @@ import { IconArrowRight, IconShop } from './Icons';
 export default function Header() {
   const pathname = usePathname();
   const isHome = pathname === '/';
-  const [stuck, setStuck] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const burgerRef = useRef<HTMLButtonElement>(null);
 
-  // Only the top page has a hero to sit on top of.
-  useEffect(() => {
-    if (!isHome) {
-      setStuck(false);
-      return;
-    }
-    let ticking = false;
-    const onScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        setStuck(window.scrollY > 40);
-        ticking = false;
-      });
-    };
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, [isHome]);
-
-  // Route change closes the menu.
-  useEffect(() => setMenuOpen(false), [pathname]);
+  // Only the top page has a hero for the bar to sit on top of, so the sub-page
+  // header is opaque from the start and never needs the scroll state.
+  const stuck = useScrolledPast(40) && isHome;
 
   useScrollLock(menuOpen);
   const close = useCallback(() => setMenuOpen(false), []);
@@ -132,6 +112,7 @@ export default function Header() {
                   href={item.href}
                   className="c-menu__link"
                   aria-current={isCurrent(pathname, item.href) ? 'page' : undefined}
+                  onClick={close}
                 >
                   <span className="c-menu__en">{item.en}</span>
                   <span className="c-menu__jp">{item.ja}</span>
@@ -141,7 +122,7 @@ export default function Header() {
           </ul>
 
           {/* Online Shop is the priority destination, so it gets its own card. */}
-          <Link href="/shop/" className="c-menu__shop">
+          <Link href="/shop/" className="c-menu__shop" onClick={close}>
             <span className="c-menu__shopText">
               <span className="c-menu__shopTitle">Online Shop</span>
               <span className="c-menu__shopNote">アルバムフレーク・スタンプはこちら</span>
@@ -151,8 +132,8 @@ export default function Header() {
           </Link>
 
           <div className="c-menu__foot">
-            <Link href="/news/">News</Link>
-            <Link href="/privacy-policy/">Privacy Policy</Link>
+            <Link href="/news/" onClick={close}>News</Link>
+            <Link href="/privacy-policy/" onClick={close}>Privacy Policy</Link>
           </div>
         </div>
       </div>

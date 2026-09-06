@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { fetchNewsDetail } from '@/lib/api';
 import { track } from '@/lib/analytics';
 import { formatDate, formatPrice, toIsoJst } from '@/lib/format';
+import { useMounted } from '@/lib/hooks';
 import { newsCategoryLabel, SITE } from '@/lib/site';
 import type { NewsDetail } from '@/lib/types';
 import Breadcrumbs from '../Breadcrumbs';
@@ -23,29 +24,34 @@ import { IconArrowRight } from '../Icons';
  */
 export default function NewsDetailClient() {
   const id = useArticleId();
-  const [article, setArticle] = useState<NewsDetail | null>(null);
-  const [state, setState] = useState<'loading' | 'ready' | 'notfound' | 'error'>('loading');
+  const [fetched, setFetched] = useState<
+    { status: 'ready'; article: NewsDetail } | { status: 'notfound' | 'error' } | null
+  >(null);
 
   useEffect(() => {
-    if (id === undefined) return; // still resolving the URL on the client
-    if (id === null) {
-      setState('notfound');
-      return;
-    }
+    // `undefined` means the URL has not been read yet; `null` means it carries
+    // no usable id, which is derived below rather than pushed into state.
+    if (id === undefined || id === null) return;
+
     const ac = new AbortController();
     fetchNewsDetail(id, ac.signal)
-      .then((data) => {
-        setArticle(data);
-        setState('ready');
-        track('view_news', { news_id: data.id, news_category: data.category });
+      .then((article) => {
+        setFetched({ status: 'ready', article });
+        track('view_news', { news_id: article.id, news_category: article.category });
       })
       .catch((err: unknown) => {
         if (ac.signal.aborted) return;
         const status = (err as { status?: number }).status;
-        setState(status === 404 ? 'notfound' : 'error');
+        setFetched({ status: status === 404 ? 'notfound' : 'error' });
       });
     return () => ac.abort();
   }, [id]);
+
+  // A missing or malformed id is a property of the URL, so it is derived here
+  // instead of being written into state from an effect.
+  const state: 'loading' | 'ready' | 'notfound' | 'error' =
+    id === null ? 'notfound' : (fetched?.status ?? 'loading');
+  const article = fetched?.status === 'ready' ? fetched.article : null;
 
   if (state === 'notfound') {
     return (
@@ -199,16 +205,18 @@ export default function NewsDetailClient() {
  * `next dev`, where the dynamic path has no static file to serve.
  */
 function useArticleId(): number | null | undefined {
-  const [href, setHref] = useState<string | null>(null);
-  useEffect(() => setHref(window.location.href), []);
+  // `/news/{id}` is always delivered as a fresh document (render.php serves it,
+  // and Next has no matching exported route to navigate to client-side), so the
+  // URL is fixed for the lifetime of this component.
+  const mounted = useMounted();
 
   return useMemo(() => {
-    if (!href) return undefined; // not resolved yet — not "missing"
+    if (!mounted) return undefined; // not resolved yet — not "missing"
 
-    const url = new URL(href);
+    const url = new URL(window.location.href);
     const fromPath = /\/news\/(\d+)\/?$/.exec(url.pathname)?.[1];
     const raw = fromPath ?? url.searchParams.get('id');
     const id = Number(raw);
     return Number.isInteger(id) && id > 0 ? id : null;
-  }, [href]);
+  }, [mounted]);
 }

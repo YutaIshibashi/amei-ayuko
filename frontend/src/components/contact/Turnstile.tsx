@@ -58,8 +58,14 @@ export default function Turnstile({
   const domId = useId();
   const onTokenRef = useRef(onToken);
   const onErrorRef = useRef(onError);
-  onTokenRef.current = onToken;
-  onErrorRef.current = onError;
+
+  // Written in an effect, not during render: the widget is created once and
+  // reads these on every callback, so they only need to be current by the time
+  // the browser can fire one.
+  useEffect(() => {
+    onTokenRef.current = onToken;
+    onErrorRef.current = onError;
+  });
 
   useEffect(() => {
     if (!siteKey) return;

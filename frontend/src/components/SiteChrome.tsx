@@ -31,11 +31,14 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
       </main>
       <Footer onOpenCookieSettings={() => setCookieModalOpen(true)} />
       <CookieBanner onDecision={bumpRevision} />
-      <CookieSettingsModal
-        open={cookieModalOpen}
-        onClose={() => setCookieModalOpen(false)}
-        onDecision={bumpRevision}
-      />
+      {/* Mounted on demand, so it reads the stored consent on its first
+          render rather than correcting itself afterwards. */}
+      {cookieModalOpen ? (
+        <CookieSettingsModal
+          onClose={() => setCookieModalOpen(false)}
+          onDecision={bumpRevision}
+        />
+      ) : null}
       <Analytics />
       <AnalyticsOffBadge />
     </>

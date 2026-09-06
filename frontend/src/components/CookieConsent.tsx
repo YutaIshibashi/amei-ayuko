@@ -72,29 +72,22 @@ export function CookieBanner({ onDecision }: { onDecision: () => void }) {
  * visitor can change their mind at any time.
  */
 export function CookieSettingsModal({
-  open,
   onClose,
   onDecision,
 }: {
-  open: boolean;
   onClose: () => void;
   onDecision: () => void;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
-  const [enabled, setEnabled] = useState(false);
-  const [internal, setInternal] = useState(false);
+  // The dialog is mounted only when a click opens it, so it never takes part
+  // in the static export and can seed its state straight from storage. That is
+  // simpler — and more correct — than rendering blank and then correcting it
+  // from an effect.
+  const [enabled, setEnabled] = useState(() => consentStatus() === 'accepted');
+  const [internal] = useState(() => isInternalUser());
   const [saved, setSaved] = useState(false);
 
-  useFocusTrap(panelRef, open, onClose);
-
-  useEffect(() => {
-    if (!open) return;
-    setEnabled(consentStatus() === 'accepted');
-    setInternal(isInternalUser());
-    setSaved(false);
-  }, [open]);
-
-  if (!open) return null;
+  useFocusTrap(panelRef, true, onClose);
 
   const save = () => {
     const status = enabled ? 'accepted' : 'rejected';
