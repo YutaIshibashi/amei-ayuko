@@ -87,7 +87,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     }
 
     // Sanitised before storage, so the stored value is always safe to render.
-    $body = \Amei\Sanitizer::html($bodyRaw);
+    $body = Sanitizer::html($bodyRaw);
 
     /* --- image ---------------------------------------------------------- */
     $previousImage = null;

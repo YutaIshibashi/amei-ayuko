@@ -15,7 +15,6 @@ require_once __DIR__ . '/_layout.php';
 
 use Amei\Auth;
 use Amei\Csrf;
-use Amei\Http;
 use Amei\Sanitizer;
 use Amei\Session;
 

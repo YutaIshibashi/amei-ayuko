@@ -16,6 +16,7 @@ declare(strict_types=1);
 require_once dirname(__DIR__, 3) . '/_app/bootstrap.php';
 require_once __DIR__ . '/_auth.php';
 
+use Amei\Database;
 use Amei\Http;
 use Amei\Mailer;
 use Amei\SyncService;
@@ -78,7 +79,7 @@ function notifyFailure(string $syncId, string $reason): void
 /** One-time notification for products the classifier could not place. */
 function notifyUncategorized(): void
 {
-    $rows = \Amei\Database::all(
+    $rows = Database::all(
         'SELECT product_id, name, url FROM uncategorized_products WHERE notified = 0'
     );
     if ($rows === []) {
@@ -96,6 +97,6 @@ function notifyUncategorized(): void
         . implode("\n", $lines);
 
     if (Mailer::notifyAdmin('【amei ayuko】未分類の商品があります', $text)) {
-        \Amei\Database::run('UPDATE uncategorized_products SET notified = 1 WHERE notified = 0');
+        Database::run('UPDATE uncategorized_products SET notified = 1 WHERE notified = 0');
     }
 }

@@ -13,6 +13,7 @@ require_once dirname(__DIR__, 3) . '/_app/bootstrap.php';
 require_once __DIR__ . '/_auth.php';
 
 use Amei\Http;
+use Amei\ProductRepository;
 use Amei\SyncService;
 
 use function Amei\blockDuringMaintenance;
@@ -27,5 +28,5 @@ $syncId = SyncService::start();
 Http::json([
     'syncId'          => $syncId,
     'previousSuccess' => SyncService::lastSuccessAt(),
-    'previousCount'   => count(\Amei\ProductRepository::allIds()),
+    'previousCount'   => count(ProductRepository::allIds()),
 ], 200);

@@ -22,6 +22,7 @@ require_once __DIR__ . '/_app/bootstrap.php';
 
 use Amei\Config;
 use Amei\Http;
+use Amei\Logger;
 use Amei\Maintenance;
 use Amei\NewsRepository;
 use Amei\ProductRepository;
@@ -49,7 +50,7 @@ function serve(string $relativePath, ?array $meta, int $status = 200): never
     $file = WEB_ROOT . '/' . ltrim($relativePath, '/');
     if (!is_readable($file)) {
         // The export is missing: fail loudly in the log, softly in the browser.
-        \Amei\Logger::error(\Amei\Logger::CHANNEL_APP, 'Export shell not found', ['path' => $relativePath]);
+        Logger::error(Logger::CHANNEL_APP, 'Export shell not found', ['path' => $relativePath]);
         http_response_code(500);
         exit;
     }
