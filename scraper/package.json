@@ -11,13 +11,13 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "cheerio": "1.0.0",
-    "sharp": "0.34.2",
-    "undici": "7.10.0"
+    "cheerio": "1.2.0",
+    "sharp": "0.35.4",
+    "undici": "8.10.1"
   },
   "devDependencies": {
-    "@types/node": "22.15.3",
-    "tsx": "4.19.4",
-    "typescript": "5.8.3"
+    "@types/node": "26.4.1",
+    "tsx": "4.23.13",
+    "typescript": "7.0.2"
   }
 }
