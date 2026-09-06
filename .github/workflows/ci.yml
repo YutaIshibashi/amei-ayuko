@@ -147,7 +147,7 @@ jobs:
           tools: composer:v2
 
       - name: Download the export built by the frontend job
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: frontend-out
           path: frontend/out
@@ -176,7 +176,7 @@ jobs:
           cache-dependency-path: e2e/package-lock.json
 
       - name: Download the export built by the frontend job
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: frontend-out
           path: frontend/out
