@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" width="320" height="80" role="img" aria-label="amei ayuko">
+  <title>amei ayuko</title>
+  <g fill="none" stroke="#e8836b" stroke-width="3" stroke-linecap="round">
+    <path d="M14 58c8-26 16-34 22-34s10 10 12 34"/>
+    <path d="M20 46h20"/>
+  </g>
+  <text x="52" y="52" font-family="Georgia, 'Times New Roman', serif" font-size="34" fill="#4a3f3a" letter-spacing="1.5">amei</text>
+  <text x="52" y="72" font-family="Georgia, 'Times New Roman', serif" font-size="20" fill="#e8836b" letter-spacing="5">ayuko</text>
+  <circle cx="188" cy="26" r="5" fill="#f2c14e"/>
+  <path d="M200 30c6-10 14-10 20 0" stroke="#7fb2a6" stroke-width="3" fill="none" stroke-linecap="round"/>
+</svg>

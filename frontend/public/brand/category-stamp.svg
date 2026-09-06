@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 540" width="720" height="540" role="img" aria-label="ラバースタンプの商品イメージ（プレースホルダー）">
+  <title>ラバースタンプの商品イメージ（プレースホルダー）</title>
+  <rect width="720" height="540" fill="#f0f7f4"/>
+  <circle cx="640" cy="100" r="90" fill="#f6b7a5" opacity=".45"/>
+  <circle cx="100" cy="450" r="110" fill="#c3ded7" opacity=".6"/>
+  <g transform="translate(230 120)">
+    <rect x="10" y="150" width="240" height="60" rx="12" fill="#7fb2a6"/>
+    <rect x="40" y="40" width="180" height="120" rx="14" fill="#e8836b"/>
+    <rect x="60" y="60" width="140" height="82" rx="10" fill="#fffdfa"/>
+    <path d="M90 122c12-34 28-44 42-44s24 12 32 44" fill="none" stroke="#e8836b" stroke-width="8" stroke-linecap="round"/>
+    <rect x="70" y="0" width="120" height="44" rx="16" fill="#4a3f3a" opacity=".18"/>
+  </g>
+  <g fill="#d98aa4">
+    <path d="M120 130c0 0-40-24-40-52 0-14 11-24 25-24 7 0 13 3 15 8 2-5 8-8 15-8 14 0 25 10 25 24 0 28-40 52-40 52Z"/>
+  </g>
+</svg>

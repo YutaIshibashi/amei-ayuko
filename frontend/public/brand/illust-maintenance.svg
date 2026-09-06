@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 320" width="400" height="320" role="img" aria-label="メンテナンス中のイラスト">
+  <title>メンテナンス中のイラスト</title>
+  <rect width="400" height="320" fill="transparent"/>
+  <ellipse cx="200" cy="290" rx="130" ry="16" fill="#ddcec0" opacity=".5"/>
+  <g transform="translate(120 70)">
+    <rect width="160" height="180" rx="18" fill="#f0f7f4" stroke="#7fb2a6" stroke-width="5"/>
+    <path d="M46 84c12-30 26-40 34-40s22 12 34 40" fill="none" stroke="#7fb2a6" stroke-width="8" stroke-linecap="round"/>
+    <rect x="42" y="112" width="76" height="12" rx="6" fill="#a5978f"/>
+    <rect x="42" y="138" width="52" height="12" rx="6" fill="#a5978f"/>
+  </g>
+  <g stroke="#e8836b" stroke-width="9" stroke-linecap="round" fill="none">
+    <path d="M290 96l44 44"/>
+    <circle cx="286" cy="92" r="20"/>
+  </g>
+</svg>
