@@ -1,0 +1,8 @@
+/* Single entry point for the (deliberately small) global stylesheet.
+   Layer order is meaningful: tokens → base → layout → components → sections. */
+@import './tokens.css';
+@import './base.css';
+@import './layout-parts.css';
+@import './components.css';
+@import './sections.css';
+@import './intro.css';

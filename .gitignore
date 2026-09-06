@@ -31,3 +31,21 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# PHP
+/backend/vendor/
+/backend/.env
+/backend/storage/
+/.dev-root/
+
+# Runtime data (written on the server, never committed)
+/backend/public/uploads/
+/backend/public/products/
+
+# Scratch
+*.tsbuildinfo
+
+# E2E artefacts
+/e2e/playwright-report/
+/e2e/test-results/
+/e2e/blob-report/

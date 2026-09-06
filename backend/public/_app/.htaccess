@@ -1,0 +1,10 @@
+# Belt and braces: even if the top-level rewrite is lost, nothing here is
+# reachable over HTTP. The application source, vendor tree, .env and logs live
+# in this directory.
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>

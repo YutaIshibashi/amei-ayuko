@@ -1,0 +1,29 @@
+{
+  "name": "amei-ayuko/backend",
+  "description": "amei ayuko — PHP API, admin and minne sync endpoints",
+  "type": "project",
+  "license": "proprietary",
+  "require": {
+    "php": ">=8.1",
+    "ext-pdo": "*",
+    "ext-json": "*",
+    "ext-mbstring": "*",
+    "ext-gd": "*",
+    "phpmailer/phpmailer": "^6.9",
+    "ezyang/htmlpurifier": "^4.17"
+  },
+  "require-dev": {
+    "phpstan/phpstan": "^2.1"
+  },
+  "autoload": {
+    "psr-4": { "Amei\\": "src/" }
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "sort-packages": true
+  },
+  "scripts": {
+    "lint": "find src public bootstrap.php -name '*.php' -print0 | xargs -0 -n1 php -l",
+    "stan": "phpstan analyse"
+  }
+}

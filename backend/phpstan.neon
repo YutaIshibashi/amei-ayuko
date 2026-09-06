@@ -1,0 +1,13 @@
+parameters:
+  level: 8
+  paths:
+    - src
+    - public
+  bootstrapFiles:
+    - bootstrap.php
+  excludePaths:
+    - vendor
+  treatPhpDocTypesAsCertain: false
+  ignoreErrors:
+    # Public entry points intentionally run at file scope.
+    - identifier: missingType.iterableValue

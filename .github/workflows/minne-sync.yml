@@ -1,0 +1,76 @@
+name: minne sync
+
+# Nightly at 00:00 JST, and on demand.
+#
+# A manual run behaves exactly like the scheduled one: no preview step, no
+# approval gate. The safety net is the server-side validation — if the run does
+# not pass it, production keeps the previous catalogue and the workflow fails.
+on:
+  schedule:
+    # 15:00 UTC = 00:00 JST. GitHub's scheduler has no timezone support, and
+    # JST has no daylight saving, so this is stable year-round.
+    - cron: '0 15 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Scrape and convert, but do not publish'
+        type: boolean
+        default: false
+
+concurrency:
+  group: minne-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    name: Scrape minne and publish
+    runs-on: ubuntu-latest
+    # Generous: ~1s per product page plus image conversion. The job should
+    # finish well inside this, and hanging forever helps nobody.
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: scraper/package-lock.json
+
+      - name: Install
+        working-directory: scraper
+        run: npm ci
+
+      - name: Run the sync
+        working-directory: scraper
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+          MINNE_SHOP_URL: ${{ vars.MINNE_SHOP_URL }}
+          MINNE_SYNC_API_KEY: ${{ secrets.MINNE_SYNC_API_KEY }}
+          # Politeness settings; raising these is a decision, not a default.
+          REQUEST_DELAY_MS: '1000'
+          IMAGE_CONCURRENCY: '3'
+          REQUEST_TIMEOUT_MS: '60000'
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            npm run sync -- --dry-run
+          else
+            npm run sync
+          fi
+
+      - name: Explain a failure in the job summary
+        if: failure()
+        run: |
+          {
+            echo "## minne 同期に失敗しました"
+            echo
+            echo "本番の商品データは更新されていません（前回成功時のデータのままです）。"
+            echo
+            echo "- 詳細はこのジョブのログを確認してください。"
+            echo "- 管理者宛にも通知メールが送信されています（サーバー側で検証に失敗した場合）。"
+            echo "- 原因を解消したあと、この画面の **Re-run jobs** から再実行してください。"
+          } >> "$GITHUB_STEP_SUMMARY"

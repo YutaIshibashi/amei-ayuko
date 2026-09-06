@@ -1,0 +1,153 @@
+/* =========================================================================
+   Opening animation
+   -------------------------------------------------------------------------
+   One self-terminating CSS animation. No JavaScript participates in removing
+   it — the final keyframe sets `visibility: hidden` with `forwards`, so the
+   overlay stops covering and stops hit-testing even if the bundle never runs.
+
+   Total timeline: 1350ms.
+     0 –  520ms  the hand-drawn mark strokes itself in
+   180 –  760ms  the logo lifts into place
+   420 –  900ms  the concept copy follows
+   340 –  820ms  three dots pop
+   950 – 1350ms  the whole overlay lifts away
+   ========================================================================= */
+
+.c-intro {
+  position: fixed;
+  inset: 0;
+  /* Above every overlay, including toasts: nothing should draw over the
+     opening. It is gone before any of them can appear. */
+  z-index: 900;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(80% 60% at 50% 38%, rgba(255, 253, 250, 0.95), transparent 70%),
+    linear-gradient(168deg, var(--c-cream) 0%, var(--c-cream-deep) 100%);
+  animation: intro-lift 400ms var(--ease-soft) 950ms forwards;
+}
+
+/* `visibility` interpolates discretely, so the 99% stop makes the hand-off
+   deterministic rather than flipping at the animation's midpoint. */
+@keyframes intro-lift {
+  0%   { opacity: 1; visibility: visible; transform: none; }
+  99%  { opacity: 0; visibility: visible; transform: scale(1.04); }
+  100% { opacity: 0; visibility: hidden;  transform: scale(1.04); }
+}
+
+.c-intro__inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: var(--s-3);
+  padding: var(--s-6);
+  text-align: center;
+}
+
+/* --- wordmark ----------------------------------------------------------- */
+.c-intro__logo {
+  width: min(280px, 62vw);
+  height: auto;
+  opacity: 0;
+  transform: translateY(14px);
+  animation: intro-rise 560ms var(--ease-pop) 60ms forwards;
+}
+
+/* --- hand-drawn underline ----------------------------------------------- */
+.c-intro__rule { width: min(200px, 48vw); height: auto; overflow: visible; }
+
+.c-intro__stroke {
+  /* pathLength="1" on the markup normalises the paths, so one rule covers
+     both regardless of their real geometry. */
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: intro-draw 460ms var(--ease-soft) forwards;
+}
+.c-intro__stroke--1 { animation-delay: 320ms; }
+.c-intro__stroke--2 { animation-delay: 470ms; }
+
+@keyframes intro-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* --- copy --------------------------------------------------------------- */
+.c-intro__copy {
+  margin-top: var(--s-2);
+  /* Sized to stay on one line at 375px: a two-line break that orphans 「に。」
+     is the first thing the eye lands on, and this text is on screen for barely
+     a second. `balance` keeps it tidy if a longer copy is ever set here. */
+  max-width: 22em;
+  font-family: var(--font-jp-display);
+  font-size: var(--fs-md);
+  letter-spacing: 0.06em;
+  text-wrap: balance;
+  color: var(--c-ink-soft);
+  opacity: 0;
+  transform: translateY(10px);
+  animation: intro-rise 480ms var(--ease-soft) 520ms forwards;
+}
+
+@media (min-width: 768px) {
+  .c-intro__copy { font-size: var(--fs-lg); letter-spacing: 0.08em; }
+}
+
+@keyframes intro-rise {
+  to { opacity: 1; transform: none; }
+}
+
+/* --- accent dots --------------------------------------------------------
+   Positioned against the overlay, not the wordmark, so they read as part of
+   the page rather than as decoration stuck to the logo.
+   ------------------------------------------------------------------------ */
+.c-intro__dot {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.3);
+  animation: intro-pop 520ms var(--ease-pop) forwards;
+}
+.c-intro__dot--1 {
+  top: 22%; left: 18%;
+  width: 14px; height: 14px;
+  background: var(--c-sun);
+  animation-delay: 420ms;
+}
+.c-intro__dot--2 {
+  top: 30%; right: 20%;
+  width: 10px; height: 10px;
+  background: var(--c-berry);
+  animation-delay: 540ms;
+}
+.c-intro__dot--3 {
+  bottom: 26%; left: 26%;
+  width: 9px; height: 9px;
+  background: var(--c-mint);
+  animation-delay: 640ms;
+}
+.c-intro__dot--4 {
+  bottom: 22%; right: 24%;
+  width: 12px; height: 12px;
+  background: var(--c-brand-soft);
+  animation-delay: 720ms;
+}
+
+@keyframes intro-pop {
+  to { opacity: 0.85; transform: none; }
+}
+
+/* --- when the opening must not run --------------------------------------
+   Three cases, all resolved before first paint so nothing ever flashes:
+     [data-intro="skip"] … already seen this session, or not the top page
+     .no-js              … the head script never ran, so nothing would decide
+                           to skip it on the next page either
+     reduced motion      … a decorative delay is exactly what to drop first
+   -------------------------------------------------------------------------- */
+[data-intro='skip'] .c-intro,
+.no-js .c-intro {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .c-intro { display: none; }
+}

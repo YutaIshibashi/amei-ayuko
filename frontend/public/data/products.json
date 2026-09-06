@@ -1,0 +1,69 @@
+{
+  "generatedAt": "2026-09-01T00:00:00+09:00",
+  "syncId": "dev-fixture",
+  "products": [
+    {
+      "id": "40000001",
+      "name": "アルバムフレーク｜はじめての1年 セット",
+      "description": "月齢カードとメッセージ枠がセットになった、はじめての1年の記録用フレークです。\n\n・サイズ：約50×50mm（12枚）\n・素材：マットコート紙\n・鉛筆でも書き込めるやさしい質感\n\n※これは開発用のサンプルデータです。",
+      "price": 880,
+      "currency": "JPY",
+      "category": "album-flake",
+      "url": "https://minne.com/items/40000001",
+      "inStock": true,
+      "sortOrder": 1,
+      "updatedAt": "2026-09-01T00:00:00+09:00",
+      "images": [
+        { "thumb": "/brand/category-album-flake.svg", "large": "/brand/category-album-flake.svg", "width": 720, "height": 540 },
+        { "thumb": "/brand/about-works.svg", "large": "/brand/about-works.svg", "width": 480, "height": 480 }
+      ]
+    },
+    {
+      "id": "40000002",
+      "name": "アルバムフレーク｜ぼく・わたしの成長きろく",
+      "description": "性別を問わず使える、シンプルな成長記録用フレークです。\n\n※これは開発用のサンプルデータです。",
+      "price": 780,
+      "currency": "JPY",
+      "category": "album-flake",
+      "url": "https://minne.com/items/40000002",
+      "inStock": true,
+      "sortOrder": 2,
+      "updatedAt": "2026-09-01T00:00:00+09:00",
+      "images": [
+        { "thumb": "/brand/about-desk.svg", "large": "/brand/about-desk.svg", "width": 480, "height": 480 }
+      ]
+    },
+    {
+      "id": "40000003",
+      "name": "ラバースタンプ｜てがきの おなまえスタンプ",
+      "description": "押すだけでかわいい、手描きのおなまえスタンプ。\n\n・スタンプ面：約40×15mm\n\n※これは開発用のサンプルデータです。",
+      "price": 1580,
+      "currency": "JPY",
+      "category": "stamp",
+      "url": "https://minne.com/items/40000003",
+      "inStock": true,
+      "sortOrder": 3,
+      "updatedAt": "2026-09-01T00:00:00+09:00",
+      "images": [
+        { "thumb": "/brand/category-stamp.svg", "large": "/brand/category-stamp.svg", "width": 720, "height": 540 },
+        { "thumb": "/brand/about-tools.svg", "large": "/brand/about-tools.svg", "width": 480, "height": 480 },
+        { "thumb": "/brand/about-hands.svg", "large": "/brand/about-hands.svg", "width": 480, "height": 480 }
+      ]
+    },
+    {
+      "id": "40000004",
+      "name": "ラバースタンプ｜きょうのきぶん スタンプ",
+      "description": "こどもの「きょうのきぶん」を残せるスタンプです。\n\n※これは開発用のサンプルデータです。",
+      "price": 1280,
+      "currency": "JPY",
+      "category": "stamp",
+      "url": "https://minne.com/items/40000004",
+      "inStock": false,
+      "sortOrder": 4,
+      "updatedAt": "2026-09-01T00:00:00+09:00",
+      "images": [
+        { "thumb": "/brand/about-works.svg", "large": "/brand/about-works.svg", "width": 480, "height": 480 }
+      ]
+    }
+  ]
+}

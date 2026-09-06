@@ -1,0 +1,152 @@
+# =============================================================================
+# amei ayuko — Apache configuration (Lolipop! ハイスピードプラン)
+#
+# The site is a static export plus a handful of PHP entry points. The rules
+# below, in order:
+#   1. security headers and hardening
+#   2. maintenance mode
+#   3. dynamic-SEO rewrites (/news/{id}, /shop/?product=)
+#   4. pretty URLs for the exported HTML
+#   5. caching
+# =============================================================================
+
+AddDefaultCharset UTF-8
+Options -Indexes -MultiViews
+DirectoryIndex index.html index.php
+ServerSignature Off
+
+# -----------------------------------------------------------------------------
+# 1. Security
+# -----------------------------------------------------------------------------
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=(), interest-cohort=()"
+    Header always set Cross-Origin-Opener-Policy "same-origin"
+    # HSTS. Only meaningful once the certificate is confirmed working; leaving
+    # it on from day one is fine on Lolipop, which issues Let's Encrypt certs.
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
+
+    # PHP sets its own CSP on HTML responses (see Amei\Http::csp()). The static
+    # export needs the same policy applied here.
+    <FilesMatch "\.html$">
+        Header always set Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https://www.googletagmanager.com https://www.google-analytics.com; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://*.analytics.google.com; frame-src https://challenges.cloudflare.com; upgrade-insecure-requests"
+    </FilesMatch>
+</IfModule>
+
+# The private application directory: source, vendor, .env, storage, logs.
+<IfModule mod_authz_core.c>
+    <FilesMatch "^\.env">
+        Require all denied
+    </FilesMatch>
+    <FilesMatch "(^\.|composer\.(json|lock)|\.md$|\.sql$|\.flag$)">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+
+RewriteEngine On
+
+# Everything under /_app/ is application internals and must never be served.
+RewriteRule ^_app/ - [F,L]
+
+# -----------------------------------------------------------------------------
+# 2. HTTPS
+# -----------------------------------------------------------------------------
+RewriteCond %{HTTPS} !=on
+RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+# Some Apache builds strip Authorization before PHP sees it; the sync
+# endpoints depend on it, so put it back.
+RewriteCond %{HTTP:Authorization} .
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+# -----------------------------------------------------------------------------
+# 3. Maintenance mode — flag file present
+#    The admin area, the API's own 503 handling and static assets stay reachable
+#    so the site can be brought back up from a browser.
+# -----------------------------------------------------------------------------
+RewriteCond %{DOCUMENT_ROOT}/maintenance.flag -f
+RewriteCond %{REQUEST_URI} !^/admin/
+RewriteCond %{REQUEST_URI} !^/api/
+RewriteCond %{REQUEST_URI} !^/maintenance\.php$
+RewriteCond %{REQUEST_URI} !^/_next/
+RewriteCond %{REQUEST_URI} !^/brand/
+RewriteCond %{REQUEST_URI} !\.(css|js|png|jpe?g|gif|svg|webp|ico|woff2?)$
+RewriteRule ^ /maintenance.php [L]
+
+# -----------------------------------------------------------------------------
+# 4. Dynamic SEO
+# -----------------------------------------------------------------------------
+# /news/123 → render.php (article meta + JSON-LD injected into the shell)
+RewriteRule ^news/([0-9]+)/?$ /render.php?__render=news&id=$1 [L,QSA]
+
+# /shop/?…&product=123 → render.php (product meta + Product JSON-LD)
+RewriteCond %{QUERY_STRING} (^|&)product=([A-Za-z0-9_-]+)($|&)
+RewriteRule ^shop/?$ /render.php?__render=product [L,QSA]
+
+# Generated sitemap
+RewriteRule ^sitemap\.xml$ /sitemap.php [L]
+
+# Google Search Console's HTML-file verification, served from the DB setting.
+RewriteRule ^google([0-9a-zA-Z_-]+)\.html$ /verify.php?token=$1 [L]
+
+# -----------------------------------------------------------------------------
+# 5. Static export routing
+#    trailingSlash: true means every route is exported as <route>/index.html.
+# -----------------------------------------------------------------------------
+# Never rewrite something that exists on disk.
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# /about → /about/  (keeps one canonical form)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{DOCUMENT_ROOT}/$1/index.html -f
+RewriteRule ^([^.]+[^/])$ /$1/ [R=301,L]
+
+# /about/ → /about/index.html
+RewriteCond %{DOCUMENT_ROOT}/$1/index.html -f
+RewriteRule ^(.+)/$ /$1/index.html [L]
+
+ErrorDocument 404 /404.html
+ErrorDocument 500 /500.html
+# 503 is deliberately not mapped: maintenance.php sends its own 503 body, and
+# an ErrorDocument here would risk masking the branded maintenance page.
+
+# -----------------------------------------------------------------------------
+# 6. Caching
+# -----------------------------------------------------------------------------
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault "access plus 1 hour"
+
+    # Next.js emits content-hashed filenames under /_next/static.
+    <FilesMatch "\.(js|css|woff2?)$">
+        ExpiresDefault "access plus 1 year"
+    </FilesMatch>
+    <FilesMatch "\.(png|jpe?g|gif|svg|webp|ico|avif)$">
+        ExpiresDefault "access plus 30 days"
+    </FilesMatch>
+    ExpiresByType text/html "access plus 0 seconds"
+    ExpiresByType application/json "access plus 60 seconds"
+</IfModule>
+
+<IfModule mod_headers.c>
+    <FilesMatch "^.+\.(js|css|woff2?)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+    # Product data is swapped in by the sync job; it must not be cached hard.
+    <FilesMatch "^products\.json$">
+        Header set Cache-Control "public, max-age=60, stale-while-revalidate=300"
+    </FilesMatch>
+    <FilesMatch "\.html$">
+        Header set Cache-Control "public, max-age=0, must-revalidate"
+    </FilesMatch>
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml \
+        application/javascript application/json application/xml image/svg+xml
+</IfModule>

@@ -1,0 +1,128 @@
+/* =========================================================================
+   Design tokens — amei ayuko
+   -------------------------------------------------------------------------
+   The palette is derived from the brand logo. When the final logo asset is
+   dropped into /public/brand/, re-sample it and update ONLY this block; every
+   component reads these custom properties, so nothing else needs to change.
+   ========================================================================= */
+:root {
+  /* --- Brand palette -------------------------------------------------- */
+  --c-brand:        #e8836b; /* terracotta coral — primary brand mark      */
+  --c-brand-dark:   #cf6a53; /* hover / active                              */
+  --c-brand-soft:   #f6b7a5; /* tints, borders                              */
+  --c-mint:         #7fb2a6; /* secondary — calm accent                     */
+  --c-mint-soft:    #c3ded7;
+  --c-sun:          #f2c14e; /* tertiary — highlights, stars                */
+  --c-berry:        #d98aa4; /* tertiary — girls / hearts                   */
+
+  /* --- Ink ------------------------------------------------------------ */
+  --c-ink:          #4a3f3a;
+  --c-ink-soft:     #7b6d66;
+  --c-ink-faint:    #a5978f;
+
+  /* --- Surfaces (per-section washes; never a flat white page) --------- */
+  --c-paper:        #fffdfa;
+  --c-cream:        #fff7ef;
+  --c-cream-deep:   #fdefe2;
+  --c-mint-wash:    #f0f7f4;
+  --c-berry-wash:   #fdf2f5;
+  --c-sun-wash:     #fef8e8;
+
+  --c-line:         #ece1d6;
+  --c-line-strong:  #ddcec0;
+
+  /* --- Feedback ------------------------------------------------------- */
+  --c-error:        #c0453c;
+  --c-error-wash:   #fdeeed;
+  --c-success:      #3f7f68;
+  --c-success-wash: #eef6f2;
+
+  /* --- Typography ----------------------------------------------------- */
+  /* Body copy stays on system fonts: zero webfont cost, best legibility.  */
+  --font-body: -apple-system, BlinkMacSystemFont, 'Hiragino Sans',
+    'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Yu Gothic Medium',
+    'Yu Gothic', Meiryo, system-ui, sans-serif;
+  /* Webfonts are scoped to headings only (loaded in layout.tsx).          */
+  --font-jp-display: 'Zen Maru Gothic', 'Hiragino Maru Gothic ProN',
+    'Hiragino Sans', Meiryo, var(--font-body);
+  --font-en-display: 'Caveat', 'Segoe Script', 'Bradley Hand', cursive;
+
+  --fs-xs:   0.75rem;
+  --fs-sm:   0.8125rem;
+  --fs-base: 0.9375rem;
+  --fs-md:   1rem;
+  --fs-lg:   1.125rem;
+  --fs-xl:   1.375rem;
+  --fs-2xl:  1.75rem;
+  --fs-3xl:  2.25rem;
+  --fs-4xl:  3rem;
+
+  --lh-tight: 1.3;
+  --lh-body:  1.9;
+
+  /* --- Space ---------------------------------------------------------- */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4rem;
+  --s-9: 6rem;
+
+  /* --- Shape ---------------------------------------------------------- */
+  --r-sm:  8px;
+  --r-md:  14px;
+  --r-lg:  22px;
+  --r-xl:  32px;
+  --r-pill: 999px;
+  /* Hand-drawn, slightly irregular corners for cards and buttons.        */
+  --r-blob: 62% 38% 46% 54% / 54% 46% 54% 46%;
+  --r-hand: 18px 26px 20px 24px;
+
+  --shadow-sm: 0 2px 6px rgba(120, 90, 70, 0.06);
+  --shadow-md: 0 8px 20px rgba(120, 90, 70, 0.1);
+  --shadow-lg: 0 18px 42px rgba(120, 90, 70, 0.16);
+
+  /* --- Layout --------------------------------------------------------- */
+  --w-page: 1120px;
+  --w-text: 720px;
+  --header-h: 68px;
+
+  /* --- Motion --------------------------------------------------------- */
+  --ease-soft: cubic-bezier(0.22, 0.68, 0.32, 1);
+  --ease-pop:  cubic-bezier(0.34, 1.42, 0.64, 1);
+  --dur-fast: 160ms;
+  --dur-mid:  320ms;
+  --dur-slow: 620ms;
+
+  /* Stacking order, lowest first. Persistent chrome (the cookie banner, the
+     analytics badge) sits BELOW modals: a modal is a focused task, and on a
+     small screen a bottom-anchored banner otherwise covers its buttons. */
+  --z-header: 100;
+  --z-menu:   200;
+  --z-cookie: 250;
+  --z-badge:  260;
+  --z-modal:  300;
+  --z-toast:  400;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --fs-base: 1rem;
+    --fs-2xl: 2rem;
+    --fs-3xl: 2.75rem;
+    --fs-4xl: 3.75rem;
+    --header-h: 84px;
+  }
+}
+
+/* Users who ask for less motion get a still, but complete, site. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 1ms;
+    --dur-mid: 1ms;
+    --dur-slow: 1ms;
+  }
+}

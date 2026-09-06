@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 880" width="880" height="880" role="img" aria-label="メインビジュアル（プレースホルダー）">
+  <title>メインビジュアル（プレースホルダー）</title>
+  <rect width="880" height="880" fill="#fdefe2"/>
+  <circle cx="240" cy="200" r="150" fill="#f6b7a5" opacity=".55"/>
+  <circle cx="660" cy="640" r="190" fill="#c3ded7" opacity=".6"/>
+  <g transform="translate(150 250)">
+    <rect width="300" height="380" rx="18" fill="#fffdfa" stroke="#ddcec0" stroke-width="4" transform="rotate(-6)"/>
+    <rect x="40" y="40" width="220" height="150" rx="10" fill="#fef8e8" transform="rotate(-6)"/>
+    <g stroke="#a5978f" stroke-width="5" stroke-linecap="round" transform="rotate(-6)">
+      <path d="M40 230h220"/><path d="M40 270h180"/><path d="M40 310h200"/>
+    </g>
+  </g>
+  <g transform="translate(470 300)">
+    <rect width="220" height="220" rx="26" fill="#e8836b"/>
+    <rect x="24" y="24" width="172" height="130" rx="14" fill="#fffdfa"/>
+    <path d="M60 110c14-40 34-52 50-52s30 16 40 52" fill="none" stroke="#e8836b" stroke-width="9" stroke-linecap="round"/>
+    <rect x="70" y="176" width="80" height="24" rx="12" fill="#4a3f3a" opacity=".25"/>
+  </g>
+  <g fill="#f2c14e">
+    <path d="M760 160c6 22 20 36 42 42-22 6-36 20-42 42-6-22-20-36-42-42 22-6 36-20 42-42Z"/>
+  </g>
+</svg>

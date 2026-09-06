@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Admin, sync endpoints and internal data are never useful in an index.
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_app/
+Disallow: /maintenance/
+
+Sitemap: https://amei-ayuko.com/sitemap.xml

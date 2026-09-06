@@ -1,0 +1,23 @@
+{
+  "name": "amei-ayuko-scraper",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20.11" },
+  "scripts": {
+    "sync": "tsx src/index.ts",
+    "sync:dry": "tsx src/index.ts --dry-run",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "cheerio": "1.0.0",
+    "sharp": "0.34.2",
+    "undici": "7.10.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.3",
+    "tsx": "4.19.4",
+    "typescript": "5.8.3"
+  }
+}

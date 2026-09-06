@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" width="480" height="480" role="img" aria-label="完成した制作物（プレースホルダー）">
+  <title>完成した制作物（プレースホルダー）</title>
+  <rect width="480" height="480" fill="#fef8e8"/>
+  <circle cx="380" cy="100" r="90" fill="#f2c14e" opacity=".28"/>
+  <circle cx="90" cy="400" r="110" fill="#f2c14e" opacity=".2"/>
+  <g transform="translate(120 140)">
+    <rect width="240" height="200" rx="18" fill="#fffdfa" stroke="#ddcec0" stroke-width="5"/>
+    <rect x="30" y="34" width="180" height="14" rx="7" fill="#f2c14e"/>
+    <rect x="30" y="70" width="140" height="10" rx="5" fill="#a5978f"/>
+    <rect x="30" y="98" width="164" height="10" rx="5" fill="#a5978f"/>
+    <rect x="30" y="140" width="90" height="30" rx="15" fill="#f2c14e"/>
+  </g>
+</svg>

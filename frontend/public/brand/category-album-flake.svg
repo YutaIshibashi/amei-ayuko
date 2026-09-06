@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 540" width="720" height="540" role="img" aria-label="アルバムフレークの商品イメージ（プレースホルダー）">
+  <title>アルバムフレークの商品イメージ（プレースホルダー）</title>
+  <rect width="720" height="540" fill="#fff7ef"/>
+  <circle cx="120" cy="90" r="90" fill="#f6b7a5" opacity=".5"/>
+  <circle cx="620" cy="460" r="110" fill="#c3ded7" opacity=".55"/>
+  <g transform="translate(150 110)">
+    <rect width="200" height="260" rx="14" fill="#fffdfa" stroke="#ddcec0" stroke-width="4" transform="rotate(-7)"/>
+    <rect width="200" height="260" rx="14" fill="#fffdfa" stroke="#ddcec0" stroke-width="4" transform="translate(120 30) rotate(6)"/>
+    <g transform="translate(120 30) rotate(6)">
+      <rect x="26" y="26" width="148" height="96" rx="10" fill="#fef8e8"/>
+      <g stroke="#a5978f" stroke-width="5" stroke-linecap="round">
+        <path d="M26 152h148"/><path d="M26 186h110"/><path d="M26 220h130"/>
+      </g>
+    </g>
+  </g>
+  <path d="M560 120c5 18 16 29 34 34-18 5-29 16-34 34-5-18-16-29-34-34 18-5 29-16 34-34Z" fill="#f2c14e"/>
+</svg>
