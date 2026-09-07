@@ -60,7 +60,7 @@ function adminHead(string $title): void
 <meta name="robots" content="noindex, nofollow">
 <title><?= $e($title) ?> | amei ayuko 管理画面</title>
 <link rel="icon" href="/brand/logo-mark.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/admin/assets/admin.css?v=1">
+<link rel="stylesheet" href="/admin/assets/admin.css?v=2">
 </head>
 <body>
 <?php if (Maintenance::isActive()): ?>
