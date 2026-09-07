@@ -122,6 +122,11 @@ jobs:
       - name: Release layout
         run: php backend/tests/release-layout-test.php
 
+      # The scraper retries image uploads, so re-sending the same
+      # (syncId, productId, filename) has to be safe on the server side.
+      - name: Sync staging idempotency
+        run: php backend/tests/sync-staging-test.php
+
       - name: Check migrations parse
         run: |
           set -euo pipefail
@@ -154,6 +159,13 @@ jobs:
       - name: Typecheck
         working-directory: scraper
         run: npm run typecheck
+
+      # Runs the sync client against a local HTTP server. Covers the multipart
+      # body and the upload retry — the path a dry run deliberately never
+      # exercises, which is why a broken upload first appeared in production.
+      - name: Test
+        working-directory: scraper
+        run: npm test
 
   seo:
     name: Dynamic SEO (render.php ↔ static export)

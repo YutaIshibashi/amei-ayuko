@@ -70,6 +70,10 @@ jobs:
       - name: Runtime compatibility
         run: php backend/tests/runtime-compat-test.php
 
+      # The scraper's upload retry depends on this being idempotent.
+      - name: Sync staging idempotency
+        run: php backend/tests/sync-staging-test.php
+
   deploy:
     name: Build and deploy
     runs-on: ubuntu-latest
