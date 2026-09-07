@@ -30,7 +30,9 @@ jobs:
 
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          # Matches production, so the vendor tree is resolved and the checks
+          # run against the same platform the site actually uses.
+          php-version: '8.5'
           extensions: mbstring, gd, pdo_mysql, json, curl
           coverage: none
           tools: composer:v2
@@ -66,7 +68,9 @@ jobs:
 
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          # Matches production, so the vendor tree is resolved and the checks
+          # run against the same platform the site actually uses.
+          php-version: '8.5'
           extensions: mbstring, gd, pdo_mysql, json, curl
           coverage: none
           tools: composer:v2
