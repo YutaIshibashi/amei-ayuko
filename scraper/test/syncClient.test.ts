@@ -239,6 +239,29 @@ describe('start and commit', () => {
     assert.equal(api.received.length, 1, 'a repeated commit could publish twice');
   });
 
+  it('reports whether abort actually succeeded', async () => {
+    api.reset();
+    api.script = [200];
+    assert.equal(await client.abort(SYNC_ID, 'done'), true);
+
+    api.reset();
+    api.script = [500];
+    // Still resolves rather than throwing — a failed sync is already on its
+    // way to reporting the real cause — but it says so.
+    assert.equal(await client.abort(SYNC_ID, 'done'), false);
+  });
+
+  it('can be closed after start fails, so a failed run leaks nothing', async () => {
+    api.reset();
+    api.script = [500];
+
+    const doomed = new SyncClient(loadConfig([]));
+    await assert.rejects(() => doomed.start());
+    // The dispatcher is per-client, so this is what stops a failed start from
+    // holding sockets open and delaying the process exit.
+    await doomed.close();
+  });
+
   it('sends JSON, not multipart, for the non-image calls', async () => {
     api.reset();
     api.script = [200];

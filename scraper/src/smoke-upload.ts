@@ -47,6 +47,7 @@ async function main(): Promise<void> {
 
   const client = new SyncClient(config);
   let syncId: string | null = null;
+  let aborted = false;
 
   try {
     const started = await client.start();
@@ -62,10 +63,22 @@ async function main(): Promise<void> {
     if (syncId !== null) {
       // Always, including on failure: this is what guarantees nothing is left
       // staged and nothing is ever published.
-      await client.abort(syncId, 'image upload smoke test');
-      log.info('session aborted; nothing was published', { syncId });
+      aborted = await client.abort(syncId, 'image upload smoke test');
+      if (aborted) {
+        log.info('session aborted; nothing was published', { syncId });
+      }
     }
     await client.close();
+  }
+
+  // A suppressed abort failure would leave the session and the staged image
+  // behind until the server's sweep. This check exists to promise cleanup, so
+  // it cannot report success without it.
+  if (!aborted) {
+    throw new Error(
+      `the upload succeeded but the session could not be aborted (syncId ${syncId ?? 'unknown'}). ` +
+        'It stays staged until the server sweeps it after 24 hours; nothing was published.',
+    );
   }
 
   log.info('smoke test passed: multipart upload works against the live sync API');

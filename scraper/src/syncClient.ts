@@ -225,14 +225,28 @@ export class SyncClient {
     return this.postJson<CommitResponse>('commit.php', { syncId, ...stats });
   }
 
-  async abort(syncId: string, reason: string): Promise<void> {
+  /**
+   * Releases the staging area.
+   *
+   * Best-effort by design for a failed sync: it is already on its way to
+   * reporting an error, and the server sweeps stale runs after 24 hours
+   * anyway — so a failed abort must not replace the real cause.
+   *
+   * The return value exists for callers whose whole premise is that nothing
+   * is left behind (the upload smoke test), which cannot treat a suppressed
+   * failure as success.
+   *
+   * @returns whether the server confirmed the abort
+   */
+  async abort(syncId: string, reason: string): Promise<boolean> {
     try {
       await this.postJson('abort.php', { syncId, reason });
+      return true;
     } catch (error) {
-      // Abort is best-effort: the server sweeps stale runs after 24h anyway.
       log.warn('abort request failed', {
         error: error instanceof Error ? error.message : String(error),
       });
+      return false;
     }
   }
 }
