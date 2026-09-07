@@ -116,6 +116,12 @@ check('product: JSON-LD contains no raw <', preg_match(
 ) === 0);
 
 check('product: noscript fallback', str_contains($productHtml, '<noscript><article>'));
+check('product: robots is index, follow', str_contains(
+    $productHtml,
+    '<meta name="robots" content="index, follow, max-image-preview:large">',
+));
+check('product: single robots meta', substr_count($productHtml, 'name="robots"') === 1);
+check('product: nothing anywhere says noindex', !str_contains($productHtml, 'noindex'));
 // The whole point is that the visitor still gets the React app.
 check('product: app bundle survives', str_contains($productHtml, '/_next/static/'));
 check('product: document still closes its head', str_contains($productHtml, '</head>'));
@@ -160,6 +166,93 @@ check('news: datePublished in JST', str_contains($newsHtml, '"datePublished":"20
 // dateModified only differs once the article has actually been edited.
 check('news: dateModified reflects the edit', str_contains($newsHtml, '"dateModified":"2026-08-05T12:30:00+09:00"'));
 check('news: BreadcrumbList', str_contains($newsHtml, '"@type":"BreadcrumbList"'));
+
+/* ------------------------------------------------ news: indexability */
+
+// The bug this pins down: the shell used to declare `robots: noindex` of its
+// own. Injection strips the tag from <head>, so the response looked right and
+// every server-side check passed — but Next.js also serialises the route's
+// metadata into the RSC payload further down the document, and React puts the
+// tag back on hydration. Google renders before it decides, so it read
+// `noindex` on every published article and refused to index them.
+//
+// Hence the check is on the *whole document*, not the head: the string must
+// not survive anywhere, in any encoding the payload uses.
+check('news: robots is index, follow', str_contains(
+    $newsHtml,
+    '<meta name="robots" content="index, follow, max-image-preview:large">',
+));
+check('news: single robots meta', substr_count($newsHtml, 'name="robots"') === 1);
+check('news: nothing anywhere in the document says noindex', !str_contains($newsHtml, 'noindex'));
+check('news: the shell itself carries no noindex', !str_contains($newsShell, 'noindex'));
+check('news: single canonical', substr_count($newsHtml, 'rel="canonical"') === 1);
+check('news: app bundle survives', str_contains($newsHtml, '/_next/static/'));
+
+/* -------------------------------- the shell's own URL is not a search result */
+
+// `/news/detail/` is a real file on disk, so it is reachable at its own URL.
+// It cannot be marked `noindex` (see above), so Apache redirects it instead —
+// and that rule must not be able to swallow an article URL.
+$htaccess = (string) file_get_contents($root . '/backend/public/.htaccess');
+
+/** The section-4 rules that claim a `/news/...` path, in the order Apache reads them.
+ *  @return list<array{pattern: string, target: string, flags: string}> */
+function newsRules(string $htaccess): array
+{
+    preg_match_all(
+        '/^RewriteRule\s+(\^news\S*)\s+(\S+)\s+\[([^\]]*)\]/m',
+        $htaccess,
+        $matches,
+        PREG_SET_ORDER,
+    );
+
+    return array_map(
+        static fn (array $m): array => ['pattern' => $m[1], 'target' => $m[2], 'flags' => $m[3]],
+        $matches,
+    );
+}
+
+/** The first rule Apache would apply to a path, or null. Every rule here is
+ *  unconditional and terminal ([L]), so first match wins.
+ *  @return array{pattern: string, target: string, flags: string}|null */
+function firstMatch(string $path, string $htaccess): ?array
+{
+    foreach (newsRules($htaccess) as $rule) {
+        // mod_rewrite matches the path without its leading slash.
+        if (preg_match('#' . str_replace('#', '\#', $rule['pattern']) . '#', ltrim($path, '/')) === 1) {
+            return $rule;
+        }
+    }
+
+    return null;
+}
+
+$article1 = firstMatch('/news/1', $htaccess);
+check('routing: /news/1 goes to render.php', $article1 !== null
+    && str_contains($article1['target'], 'render.php?__render=news'));
+
+$article999 = firstMatch('/news/999/', $htaccess);
+check('routing: a trailing slash does not change that', $article999 !== null
+    && str_contains($article999['target'], 'render.php?__render=news'));
+
+$shellUrl = firstMatch('/news/detail/', $htaccess);
+check('routing: /news/detail/ redirects to the list', $shellUrl !== null
+    && $shellUrl['target'] === '/news/'
+    && str_contains($shellUrl['flags'], 'R=301'));
+
+$shellFile = firstMatch('/news/detail/index.html', $htaccess);
+check('routing: so does the file itself', $shellFile !== null
+    && $shellFile['target'] === '/news/'
+    && str_contains($shellFile['flags'], 'R=301'));
+
+// The redirect sits after the article rule; nothing about `detail` may reach
+// back and claim a numeric URL.
+check('routing: the redirect never claims an article URL', $article1 !== null
+    && !str_contains($article1['target'], '/news/'));
+
+// The list itself is an ordinary exported page and must fall through to the
+// static routing further down the file.
+check('routing: /news/ is left alone', firstMatch('/news/', $htaccess) === null);
 
 // An article that was never edited must report the two dates identically.
 $unedited = $article;

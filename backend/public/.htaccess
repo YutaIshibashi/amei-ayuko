@@ -88,6 +88,20 @@ RewriteRule ^ /maintenance.php [L]
 # /news/123 → render.php (article meta + JSON-LD injected into the shell)
 RewriteRule ^news/([0-9]+)/?$ /render.php?__render=news&id=$1 [L,QSA]
 
+# The shell the rule above serves is a real file on disk, so it is reachable
+# at its own URL too — where it is a half-rendered article with no content of
+# its own. It used to carry `noindex` to keep it out of search, but a shell
+# cannot: Next.js replays that metadata after hydration, so the `noindex`
+# arrived on every /news/{id} page a crawler rendered. Sending the URL to the
+# list it stands in for keeps it out of the index without marking the shell.
+#
+# Deliberately below the rule above, whose [L] has already claimed every
+# numeric article URL. `detail` is not [0-9]+, so neither pattern can take the
+# other's traffic, and render.php reads the shell from disk rather than over
+# HTTP — this redirect is invisible to it.
+RewriteRule ^news/detail/?$ /news/ [R=301,L]
+RewriteRule ^news/detail/index\.html$ /news/ [R=301,L]
+
 # /shop/?…&product=123 → render.php (product meta + Product JSON-LD)
 RewriteCond %{QUERY_STRING} (^|&)product=([A-Za-z0-9_-]+)($|&)
 RewriteRule ^shop/?$ /render.php?__render=product [L,QSA]
