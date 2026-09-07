@@ -72,7 +72,10 @@ export default function ProductModal({
   const category = categoryOf(product.category);
   const shareUrl = `${SITE.url}/shop/?category=${product.category}&product=${product.id}`;
 
-  const buy = (position: 'top' | 'bottom') => {
+  // `position` survives a single remaining button on purpose: the GA4 `source`
+  // value stays `product_modal_top`, so the click-through numbers remain
+  // comparable with everything recorded before the lower button was removed.
+  const buy = (position: 'top') => {
     track('click_minne', { ...productParams(product), source: `product_modal_${position}`, destination: 'minne' });
   };
 
@@ -129,7 +132,7 @@ export default function ProductModal({
                 {!product.inStock ? <small>現在minneでは在庫切れです</small> : null}
               </p>
 
-              {/* Purchase CTA appears at the top and again after the copy. */}
+              {/* The single purchase CTA, above the description. */}
               <div className="c-modal__actions">
                 <a
                   className="a-btn a-btn--lg a-btn--block"
@@ -142,6 +145,9 @@ export default function ProductModal({
                   minneで購入する
                   <IconExternal width={16} height={16} aria-hidden="true" />
                 </a>
+                <p className="c-modal__buyNote">
+                  ご購入・お支払い・発送はminneのページで行われます。
+                </p>
               </div>
 
               <div className="c-modal__descBox">
@@ -150,23 +156,6 @@ export default function ProductModal({
                 </h3>
                 {/* minne's own description text, rendered verbatim as plain text. */}
                 <p className="c-modal__desc">{product.description}</p>
-              </div>
-
-              <div className="c-modal__actions">
-                <a
-                  className="a-btn a-btn--lg a-btn--block"
-                  href={product.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => buy('bottom')}
-                >
-                  <IconShop width={20} height={20} />
-                  minneで購入する
-                  <IconExternal width={16} height={16} aria-hidden="true" />
-                </a>
-                <p style={{ fontSize: 'var(--fs-xs)', color: 'var(--c-ink-soft)', textAlign: 'center' }}>
-                  ご購入・お支払い・発送はminneのページで行われます。
-                </p>
               </div>
 
               <div className="c-modal__meta">

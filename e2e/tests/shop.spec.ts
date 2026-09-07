@@ -57,8 +57,10 @@ test.describe('Product modal', () => {
     await expect(page).toHaveURL(/category=album-flake&product=1001/);
 
     // Purchase CTA at the top and again at the bottom.
+    // Exactly one purchase CTA, above the description. The second one that
+    // used to sit under the copy was removed.
     const buyLinks = modal.getByRole('link', { name: /minneで購入する/ });
-    await expect(buyLinks).toHaveCount(2);
+    await expect(buyLinks).toHaveCount(1);
     await expect(buyLinks.first()).toHaveAttribute('href', 'https://minne.com/items/1001');
     await expect(modal).toContainText('の説明文です');
   });
@@ -127,6 +129,60 @@ test.describe('Product modal', () => {
     await page.goto('/shop/?category=album-flake&product=1001');
     await expect(page.getByRole('dialog')).toBeVisible();
     await expect(page.locator('body')).toHaveClass(/is-locked/);
+  });
+
+  test('the purchase CTA sits above the description, and nothing follows it', async ({ page }) => {
+    await page.goto('/shop/?category=album-flake&product=1001');
+    const modal = page.getByRole('dialog');
+
+    const buy = modal.getByRole('link', { name: /minneで購入する/ });
+    const note = modal.getByText('ご購入・お支払い・発送はminneのページで行われます。');
+    const description = modal.locator('.c-modal__descBox');
+    const share = modal.getByRole('button', { name: /この商品をシェア/ });
+
+    await expect(buy).toHaveCount(1);
+    await expect(note).toHaveCount(1);
+    await expect(share).toBeVisible();
+
+    const box = async (locator: ReturnType<typeof modal.locator>) => {
+      const rect = await locator.first().boundingBox();
+      if (!rect) throw new Error('element has no box');
+      return rect;
+    };
+
+    const buyBox = await box(buy);
+    const noteBox = await box(note);
+    const descriptionBox = await box(description);
+    const shareBox = await box(share);
+
+    // Order: CTA → its note → description → share.
+    expect(noteBox.y).toBeGreaterThan(buyBox.y);
+    expect(descriptionBox.y).toBeGreaterThan(noteBox.y);
+    expect(shareBox.y).toBeGreaterThan(descriptionBox.y);
+
+    // The note belongs to the button, so it must not drift away from it.
+    expect(noteBox.y - (buyBox.y + buyBox.height)).toBeLessThan(24);
+  });
+
+  test('the modal fits its panel at both breakpoints', async ({ page }) => {
+    await page.goto('/shop/?category=album-flake&product=1001');
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // Nothing may overflow the panel horizontally, at either width.
+    const overflow = await page.evaluate(() => {
+      const panel = document.querySelector('.c-modal__panel');
+      const scroll = document.querySelector('.c-modal__scroll');
+      if (!panel || !scroll) return null;
+      return {
+        panelWidth: Math.round(panel.getBoundingClientRect().width),
+        contentWidth: Math.round(scroll.scrollWidth),
+        clientWidth: Math.round(scroll.clientWidth),
+      };
+    });
+
+    expect(overflow).not.toBeNull();
+    expect(overflow!.contentWidth).toBeLessThanOrEqual(overflow!.clientWidth + 1);
+    expect(overflow!.panelWidth).toBeGreaterThan(200);
   });
 
   test('gallery counter follows the arrows on desktop', async ({ page, isMobile }) => {
