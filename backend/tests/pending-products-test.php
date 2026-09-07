@@ -396,6 +396,71 @@ pendingCheck(
     'and leaves no half-published image directory behind',
     !is_dir($webRoot . '/products/DDD444'),
 );
+pendingCheck(
+    'and does not leave an override the next sync would act on',
+    (int) Database::value(
+        'SELECT COUNT(*) FROM product_category_overrides WHERE product_id = :id',
+        [':id' => 'DDD444'],
+    ) === 0,
+);
+
+/* ------------------------------------- 7. a product with no pending snapshot */
+
+// Rows predating the pending store, and products minne has since removed,
+// have nothing to publish. That has to be reported, not passed off as success.
+Database::run(
+    "INSERT INTO uncategorized_products (product_id, name, url) VALUES ('EEE555', 'ghost', '')",
+);
+
+$threw = false;
+$message = '';
+try {
+    ProductRepository::setOverride('EEE555', 'stamp');
+} catch (\Throwable $e) {
+    $threw = true;
+    $message = $e->getMessage();
+}
+
+pendingCheck('a product with no pending snapshot cannot be published', $threw, $message);
+pendingCheck('and is reported as such', $message === 'pending_snapshot_missing', $message);
+pendingCheck(
+    'and leaves no override behind',
+    (int) Database::value(
+        'SELECT COUNT(*) FROM product_category_overrides WHERE product_id = :id',
+        [':id' => 'EEE555'],
+    ) === 0,
+);
+pendingCheck('and is not published', !in_array('EEE555', publishedIds(), true));
+
+/* ------------------------- 8. a failed commit leaves the catalogue alone */
+
+// The pending snapshot is written before anything public changes, so a failure
+// there must not have replaced the catalogue — otherwise the operator is told
+// production is untouched when it is not.
+if (posix_getuid() !== 0) {
+    $catalogueBefore = (string) file_get_contents(ProductRepository::jsonPath());
+    $publishedBefore = publishedIds();
+
+    // Make the pending store impossible to rebuild.
+    chmod(PendingProducts::dir(), 0500);
+
+    $commitThrew = false;
+    try {
+        runSync([unclassifiableProduct('FFF666', 1), stampProduct('GGG777', 2)]);
+    } catch (\Throwable) {
+        $commitThrew = true;
+    }
+
+    chmod(PendingProducts::dir(), 0750);
+
+    pendingCheck('a commit that cannot write the pending store fails', $commitThrew);
+    pendingCheck(
+        'and leaves the published catalogue exactly as it was',
+        (string) file_get_contents(ProductRepository::jsonPath()) === $catalogueBefore
+            && publishedIds() === $publishedBefore,
+        shape(publishedIds()),
+    );
+}
 
 /* ----------------------------------------------------------------- result */
 

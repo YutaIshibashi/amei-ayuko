@@ -52,10 +52,15 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                         : 'カテゴリを変更しました。以降の同期でもこの設定が優先されます。'
                 );
             } catch (\Throwable $e) {
-                // The catalogue is swapped atomically, so a failure here leaves
-                // the shop exactly as it was and the product still pending.
+                // The catalogue is swapped atomically and the override is rolled
+                // back, so a failure here really does leave everything as it was.
                 Session::flash(
-                    '公開に失敗しました。商品データは変更されていません。時間をおいて再度お試しください。',
+                    $e->getMessage() === 'pending_snapshot_missing'
+                        ? 'この商品の保留データが見つかりませんでした。'
+                            . 'minneから削除された商品か、保留データが作成される前に検出された商品です。'
+                            . '次回の同期後に、まだ未分類として残っていれば設定できます。'
+                        : '公開に失敗しました。商品データもカテゴリ設定も変更されていません。'
+                            . '時間をおいて再度お試しください。',
                     'error'
                 );
             }

@@ -212,25 +212,27 @@ final class SyncService
         $added = array_values(array_diff($newIds, $previousIds));
         $removed = array_values(array_diff($previousIds, $newIds));
 
-        // 1. Move staged images into place and rewrite each product's paths.
+        // 1. Secure the pending snapshot first, while nothing public has
+        //    changed yet. If it fails, the run aborts with the public
+        //    catalogue and its images exactly as they were — which is what the
+        //    failure notification tells the operator. Doing this after the
+        //    swap would make that message untrue.
+        self::retainUncategorized($dir);
+
+        // 2. Move staged images into place and rewrite each product's paths.
         $products = self::publishImages($syncId, $products);
 
-        // 2. Swap the catalogue in atomically.
+        // 3. Swap the catalogue in atomically.
         ProductRepository::writeAtomically(ProductRepository::jsonPath(), [
             'generatedAt' => date(DATE_ATOM),
             'syncId'      => $syncId,
             'products'    => $products,
         ]);
 
-        // 3. Only now discard the images of products that disappeared.
+        // 4. Only now discard the images of products that disappeared.
         foreach ($removed as $productId) {
             self::deleteProductImages($productId);
         }
-
-        // Before the staging area is deleted below: the pending store keeps
-        // the unclassified products and their images so an administrator can
-        // publish one on demand.
-        self::retainUncategorized($dir);
 
         Database::run(
             "UPDATE sync_sessions

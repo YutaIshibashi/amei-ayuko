@@ -130,19 +130,43 @@ final class ProductRepository
             throw new \InvalidArgumentException('invalid_product_id');
         }
 
+        // Remembered so the row can be put back exactly as it was if the
+        // work below fails. Persisting an override for a publication that did
+        // not happen would mean the next sync quietly does what the admin
+        // screen just reported as failed.
+        $previous = Database::value(
+            'SELECT category FROM product_category_overrides WHERE product_id = :id',
+            [':id' => $productId]
+        );
+
         Database::run(
             'INSERT INTO product_category_overrides (product_id, category) VALUES (:id, :c)
              ON DUPLICATE KEY UPDATE category = VALUES(category)',
             [':id' => $productId, ':c' => $category]
         );
-        AuditLog::write('product_category', $productId);
 
-        if (self::find($productId) !== null) {
-            self::applyOverrideToLiveData($productId, $category);
-            return;
+        try {
+            if (self::find($productId) !== null) {
+                self::applyOverrideToLiveData($productId, $category);
+            } else {
+                self::publishPending($productId, $category);
+            }
+        } catch (\Throwable $e) {
+            if (is_string($previous)) {
+                Database::run(
+                    'UPDATE product_category_overrides SET category = :c WHERE product_id = :id',
+                    [':id' => $productId, ':c' => $previous]
+                );
+            } else {
+                Database::run(
+                    'DELETE FROM product_category_overrides WHERE product_id = :id',
+                    [':id' => $productId]
+                );
+            }
+            throw $e;
         }
 
-        self::publishPending($productId, $category);
+        AuditLog::write('product_category', $productId);
     }
 
     /**
@@ -206,9 +230,11 @@ final class ProductRepository
     {
         $checkout = PendingProducts::checkout($productId);
         if ($checkout === null) {
-            // Neither published nor pending: nothing to do beyond the override,
-            // which the next sync will apply if the product reappears.
-            return;
+            // Neither published nor pending. It happens to rows that predate
+            // the pending store, and to products minne has since removed:
+            // there is nothing to publish, and saying otherwise would be a
+            // lie the admin screen repeats.
+            throw new \RuntimeException('pending_snapshot_missing');
         }
 
         $product = $checkout['product'];
