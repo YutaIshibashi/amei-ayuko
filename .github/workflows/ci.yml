@@ -167,6 +167,12 @@ jobs:
       - name: Admin news actions
         run: php backend/tests/admin-news-actions-test.php
 
+      # That test empties `news` and `admin_users`, so which database it picks
+      # is a safety property in its own right: it has to read the name the
+      # application will actually connect to, not guess one.
+      - name: Admin news database guard
+        run: php backend/tests/admin-news-db-guard-test.php
+
       - name: Check migrations parse
         run: |
           set -euo pipefail

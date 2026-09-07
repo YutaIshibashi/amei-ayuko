@@ -36,9 +36,53 @@ function adminCheck(string $label, bool $ok, string $detail = ''): void
     $results[] = ['label' => $label, 'ok' => $ok, 'detail' => $detail];
 }
 
-/* ------------------------------------------------------- the release tree */
+/* ------------------------------------------- configuration, then the guard */
 
 $release = sys_get_temp_dir() . '/amei-admin-' . bin2hex(random_bytes(6));
+
+// The private application directory the real bootstrap reads `.env` from.
+// An AMEI_APP_DIR that is already set is honoured, which is bootstrap.php's
+// own contract and what lets admin-news-db-guard-test.php point this at a
+// scratch configuration.
+$appDir = getenv('AMEI_APP_DIR') ?: $root . '/backend';
+putenv('AMEI_APP_DIR=' . $appDir);
+putenv('AMEI_WEB_ROOT=' . $release);
+require $root . '/backend/bootstrap.php';
+
+use Amei\Config;
+use Amei\Database;
+use Amei\NewsRepository;
+
+// This test applies schema and empties `news`, `admin_users` and
+// `admin_login_attempts`, so it must never be pointed at anything but a
+// scratch database.
+//
+// The name has to come from `Config` — the very lookup `Database` performs
+// when it builds its DSN — rather than from `getenv('DB_NAME')` with a
+// hopeful default. The environment variable is unset in every setup that
+// keeps its settings in `.env`, and defaulting to 'amei_test' there would
+// wave a development or production configuration straight through to the
+// deletes below.
+//
+// Nothing above this line opens a database connection, so a refusal here is
+// a refusal before the first statement.
+// Caught rather than left to bubble: `ErrorHandler` turns an uncaught
+// exception into a rendered page and a zero exit status, which for a test is
+// a pass that never ran.
+try {
+    $dbName = Config::require('DB_NAME');
+} catch (\Throwable) {
+    fwrite(STDERR, "refusing to run: DB_NAME is not configured\n");
+    exit(1);
+}
+
+if (!str_contains($dbName, 'test')) {
+    fwrite(STDERR, "refusing to run against '{$dbName}': the name must contain 'test'\n");
+    exit(1);
+}
+
+/* ------------------------------------------------------- the release tree */
+
 exec(
     escapeshellarg($root . '/ops/build-release.sh') . ' ' . escapeshellarg($release) . ' --no-frontend 2>&1',
     $buildOutput,
@@ -48,32 +92,32 @@ if ($buildStatus !== 0) {
     fwrite(STDERR, "failed to assemble the release tree:\n" . implode("\n", $buildOutput) . "\n");
     exit(1);
 }
+// Torn down in one place, so that every exit below leaves behind neither a
+// stray server nor a stray tree.
+/** @var resource|null $server */
+$server = null;
+register_shutdown_function(static function () use (&$server, $release): void {
+    if (is_resource($server)) {
+        proc_terminate($server);
+        proc_close($server);
+    }
+    exec('rm -rf ' . escapeshellarg($release));
+});
 
-$dbName = getenv('DB_NAME') ?: 'amei_test';
-if (!str_contains($dbName, 'test')) {
-    fwrite(STDERR, "refusing to run against '{$dbName}': the name must contain 'test'\n");
-    exit(1);
-}
-
-file_put_contents($release . '/_app/.env', implode("\n", [
-    'APP_ENV=testing',
-    'SITE_URL=http://127.0.0.1',
-    'APP_SECRET=admin-actions-test-secret',
-    'DB_HOST=' . (getenv('DB_HOST') ?: '127.0.0.1'),
-    'DB_PORT=' . (getenv('DB_PORT') ?: '3306'),
-    'DB_NAME=' . $dbName,
-    'DB_USER=' . (getenv('DB_USER') ?: 'amei'),
-    'DB_PASSWORD=' . (getenv('DB_PASSWORD') ?: 'amei-test'),
-]) . "\n");
+// No `.env` is written into the release tree: APP_DIR is overridden above, so
+// both this process and the server below read the configuration the guard
+// just validated. Should that override ever be dropped, `Config::require()`
+// raises rather than falling back to some other database.
 
 /* ---------------------------------------------------- schema and fixtures */
 
-putenv('AMEI_APP_DIR=' . $root . '/backend');
-putenv('AMEI_WEB_ROOT=' . $release);
-require $root . '/backend/bootstrap.php';
-
-use Amei\Database;
-use Amei\NewsRepository;
+try {
+    Database::pdo();
+} catch (\Throwable $e) {
+    fwrite(STDERR, "a database is required for this test (see ci.yml)\n");
+    fwrite(STDERR, $e->getMessage() . "\n");
+    exit(1);
+}
 
 try {
     Database::value('SELECT COUNT(*) FROM news');
@@ -114,14 +158,6 @@ if (!is_resource($server)) {
     fwrite(STDERR, "could not start the built-in server\n");
     exit(1);
 }
-
-register_shutdown_function(static function () use ($server, $release): void {
-    if (is_resource($server)) {
-        proc_terminate($server);
-        proc_close($server);
-    }
-    exec('rm -rf ' . escapeshellarg($release));
-});
 
 // Wait for it to accept connections.
 $ready = false;
