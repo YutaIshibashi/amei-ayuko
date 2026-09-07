@@ -103,12 +103,12 @@ final class SyncService
             );
 
             if ($category === null) {
-                // Withheld from the public site, raised to the administrator.
-                $uncategorized[] = [
-                    'id'   => $product['id'],
-                    'name' => $product['name'],
-                    'url'  => $product['url'],
-                ];
+                // Withheld from the public site and raised to the
+                // administrator. The *whole* record is kept, not just an
+                // identifier: publishing it later has to be possible without
+                // waiting for another sync, and that needs the description,
+                // the price and the image filenames.
+                $uncategorized[] = $product;
                 continue;
             }
 
@@ -212,22 +212,27 @@ final class SyncService
         $added = array_values(array_diff($newIds, $previousIds));
         $removed = array_values(array_diff($previousIds, $newIds));
 
-        // 1. Move staged images into place and rewrite each product's paths.
+        // 1. Secure the pending snapshot first, while nothing public has
+        //    changed yet. If it fails, the run aborts with the public
+        //    catalogue and its images exactly as they were — which is what the
+        //    failure notification tells the operator. Doing this after the
+        //    swap would make that message untrue.
+        self::retainUncategorized($dir);
+
+        // 2. Move staged images into place and rewrite each product's paths.
         $products = self::publishImages($syncId, $products);
 
-        // 2. Swap the catalogue in atomically.
+        // 3. Swap the catalogue in atomically.
         ProductRepository::writeAtomically(ProductRepository::jsonPath(), [
             'generatedAt' => date(DATE_ATOM),
             'syncId'      => $syncId,
             'products'    => $products,
         ]);
 
-        // 3. Only now discard the images of products that disappeared.
+        // 4. Only now discard the images of products that disappeared.
         foreach ($removed as $productId) {
             self::deleteProductImages($productId);
         }
-
-        self::recordUncategorized($dir);
 
         Database::run(
             "UPDATE sync_sessions
@@ -378,7 +383,13 @@ final class SyncService
         return $products;
     }
 
-    private static function deleteProductImages(string $productId): void
+    /**
+     * Removes a product's published images.
+     *
+     * Not private any more: withdrawing a manual category can take a product
+     * back out of the shop, and that has to clean up the same way a sync does.
+     */
+    public static function deleteProductImages(string $productId): void
     {
         if (!self::isSafeProductId($productId)) {
             return;
@@ -386,7 +397,16 @@ final class SyncService
         self::removeDirectory(ProductRepository::imageBaseDir() . '/' . $productId);
     }
 
-    private static function recordUncategorized(string $dir): void
+    /**
+     * Moves the run's unclassified products into the pending store and records
+     * them for the admin screen.
+     *
+     * Runs while the staging area still exists, because that is where their
+     * images are. Both the store and the table are rebuilt rather than merged,
+     * so a product that has since been classified — or has vanished from minne
+     * — leaves on its own.
+     */
+    private static function retainUncategorized(string $dir): void
     {
         $file = $dir . '/uncategorized.json';
         $items = is_readable($file) ? json_decode((string) file_get_contents($file), true) : [];
@@ -394,13 +414,13 @@ final class SyncService
             $items = [];
         }
 
-        // The list is rebuilt every run: a product that has since been
-        // classified (manually or otherwise) drops off on its own.
+        /** @var list<array<string, mixed>> $products */
+        $products = array_values(array_filter($items, static fn ($item): bool => is_array($item)));
+
+        PendingProducts::replaceAll($products, $dir . '/images');
+
         Database::run('DELETE FROM uncategorized_products');
-        foreach ($items as $item) {
-            if (!is_array($item)) {
-                continue;
-            }
+        foreach ($products as $item) {
             Database::run(
                 'INSERT INTO uncategorized_products (product_id, name, url) VALUES (:id, :n, :u)
                  ON DUPLICATE KEY UPDATE name = VALUES(name), url = VALUES(url)',

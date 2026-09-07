@@ -194,6 +194,15 @@
 .c-modal__descBox { background: var(--c-cream); border-radius: var(--r-hand); padding: var(--s-5); }
 .c-modal__sticky { position: sticky; top: 0; }
 .c-modal__actions { display: grid; gap: var(--s-3); }
+/* Sits with the CTA it explains, so the column ends on the share row rather
+   than on a stray line of small print. */
+.c-modal__buyNote {
+  margin: calc(-1 * var(--s-1)) 0 0;
+  font-size: var(--fs-xs);
+  line-height: 1.7;
+  color: var(--c-ink-soft);
+  text-align: center;
+}
 .c-modal__meta { display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: center; }
 
 .c-modal__loading { display: grid; place-items: center; gap: var(--s-4); min-height: 320px; padding: var(--s-7); text-align: center; }

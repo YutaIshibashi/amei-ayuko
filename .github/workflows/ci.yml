@@ -78,6 +78,34 @@ jobs:
         # deprecation of PDO::MYSQL_ATTR_INIT_COMMAND reached production as a
         # 500 on every database-backed endpoint while CI stayed green.
         php: ['8.2', '8.5']
+
+    services:
+      # The pending-product lifecycle is inseparable from its tables — which
+      # products are withheld, which have a manual category — so the test for
+      # it drives a real database rather than a stand-in.
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ci-root
+          MYSQL_DATABASE: amei_test
+          MYSQL_USER: amei
+          MYSQL_PASSWORD: amei-test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pci-root"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_NAME: amei_test
+      DB_USER: amei
+      DB_PASSWORD: amei-test
+      APP_SECRET: ci-secret-not-used-for-anything-real
+
     steps:
       - uses: actions/checkout@v4
 
@@ -126,6 +154,12 @@ jobs:
       # (syncId, productId, filename) has to be safe on the server side.
       - name: Sync staging idempotency
         run: php backend/tests/sync-staging-test.php
+
+      # Drives start → stage → commit → override against a real database:
+      # an unclassified product must never reach the shop by accident, and
+      # must reach it promptly when an administrator decides it should.
+      - name: Pending products lifecycle
+        run: php backend/tests/pending-products-test.php
 
       - name: Check migrations parse
         run: |
