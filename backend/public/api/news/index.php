@@ -8,7 +8,7 @@ declare(strict_types=1);
  * Published articles, ten per page, newest first.
  */
 
-require_once dirname(__DIR__, 3) . '/_app/bootstrap.php';
+require_once dirname(__DIR__, 2) . '/_app/bootstrap.php';
 
 use Amei\Http;
 use Amei\Maintenance;

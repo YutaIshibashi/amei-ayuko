@@ -11,7 +11,7 @@ declare(strict_types=1);
  * Body: { "syncId": "...", "products": [ … ] }
  */
 
-require_once dirname(__DIR__, 3) . '/_app/bootstrap.php';
+require_once dirname(__DIR__, 2) . '/_app/bootstrap.php';
 require_once __DIR__ . '/_auth.php';
 
 use Amei\Http;
