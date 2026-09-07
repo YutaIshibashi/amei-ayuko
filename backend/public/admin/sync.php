@@ -19,6 +19,7 @@ require_once __DIR__ . '/_layout.php';
 use Amei\Auth;
 use Amei\Csrf;
 use Amei\Database;
+use Amei\PendingProducts;
 use Amei\ProductRepository;
 use Amei\Sanitizer;
 use Amei\Session;
@@ -39,17 +40,44 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 
     if ($action === 'set_category' && $productId !== '') {
         $category = (string) ($_POST['category'] ?? '');
-        if (isset(ProductRepository::CATEGORIES[$category])) {
-            ProductRepository::setOverride($productId, $category);
-            Session::flash('カテゴリを設定しました。以降の同期でもこの設定が優先されます。');
-        } else {
+        if (!isset(ProductRepository::CATEGORIES[$category])) {
             Session::flash('カテゴリの指定が正しくありません。', 'error');
+        } else {
+            try {
+                $wasPending = ProductRepository::find($productId) === null;
+                ProductRepository::setOverride($productId, $category);
+                Session::flash(
+                    $wasPending
+                        ? 'カテゴリを設定し、オンラインショップへ公開しました。以降の同期でもこの設定が優先されます。'
+                        : 'カテゴリを変更しました。以降の同期でもこの設定が優先されます。'
+                );
+            } catch (\Throwable $e) {
+                // The catalogue is swapped atomically, so a failure here leaves
+                // the shop exactly as it was and the product still pending.
+                Session::flash(
+                    '公開に失敗しました。商品データは変更されていません。時間をおいて再度お試しください。',
+                    'error'
+                );
+            }
         }
     }
 
     if ($action === 'clear_override' && $productId !== '') {
-        ProductRepository::clearOverride($productId);
-        Session::flash('手動設定を解除しました。次回の同期から自動分類に戻ります。');
+        try {
+            $stillPublished = ProductRepository::find($productId) !== null;
+            ProductRepository::clearOverride($productId);
+            $nowPublished = ProductRepository::find($productId) !== null;
+
+            Session::flash(
+                match (true) {
+                    !$stillPublished => '手動設定を解除しました。',
+                    $nowPublished    => '手動設定を解除しました。自動分類でも同じ判定になったため、公開は継続しています。',
+                    default          => '手動設定を解除しました。自動分類できなかったため、公開を停止し「自動分類できなかった商品」へ戻しました。',
+                }
+            );
+        } catch (\Throwable $e) {
+            Session::flash('解除に失敗しました。時間をおいて再度お試しください。', 'error');
+        }
     }
 
     header('Location: /admin/sync.php');
@@ -72,6 +100,9 @@ $overrides = Database::all(
 );
 $products = ProductRepository::all();
 $productNames = [];
+foreach (PendingProducts::all() as $pending) {
+    $productNames[(string) $pending['id']] = (string) $pending['name'];
+}
 foreach ($products as $product) {
     $productNames[(string) $product['id']] = (string) $product['name'];
 }
@@ -113,7 +144,9 @@ adminHead('Shop Sync Status');
   <h2 class="panel__title">自動分類できなかった商品</h2>
   <p class="panel__note">
     これらの商品は<strong>公開サイトには表示されていません</strong>。
-    カテゴリを設定すると、オンラインショップへ即時反映されます。
+    カテゴリを設定した商品だけが、その場でオンラインショップへ公開されます
+    （次回の同期を待つ必要はありません）。
+    設定しなかった商品はこの一覧に残り、公開されません。
     設定した内容は、以降の同期でも優先されます。
   </p>
 
@@ -156,7 +189,11 @@ adminHead('Shop Sync Status');
 
 <section class="panel">
   <h2 class="panel__title">手動で設定したカテゴリ</h2>
-  <p class="panel__note">自動分類より優先されます。解除すると、次回の同期から自動分類に戻ります。</p>
+  <p class="panel__note">
+    自動分類より優先されます。解除すると、その場で自動分類をやり直します。
+    自動でも同じ判定になる商品は公開が続き、判定できない商品は公開を停止して
+    「自動分類できなかった商品」へ戻ります。
+  </p>
   <?php if ($overrides === []): ?>
     <p class="empty">手動設定はありません。</p>
   <?php else: ?>
@@ -176,7 +213,7 @@ adminHead('Shop Sync Status');
                 <input type="hidden" name="action" value="clear_override">
                 <input type="hidden" name="product_id" value="<?= $e($pid) ?>">
                 <button class="btn btn--ghost btn--sm" type="submit"
-                        data-confirm="手動設定を解除します。次回の同期から自動分類に戻ります。よろしいですか？">
+                        data-confirm="手動設定を解除し、その場で自動分類をやり直します。自動分類できない商品は公開が停止されます。よろしいですか？">
                   解除
                 </button>
               </form>
