@@ -49,7 +49,10 @@ function check(string $label, bool $ok): void
 
 /* ---------------------------------------------------------------- product */
 
-$shopShell = (string) file_get_contents($out . '/shop/index.html');
+// The product shell, not `/shop/`'s own document: `/shop/` declares its own
+// title, canonical, OGP and CollectionPage graph, and Next.js puts every one
+// of them back on hydration, over the product's. See render.php.
+$shopShell = (string) file_get_contents($out . '/shop/product/index.html');
 
 $product = [
     'id'          => '1001',
@@ -125,6 +128,54 @@ check('product: nothing anywhere says noindex', !str_contains($productHtml, 'noi
 // The whole point is that the visitor still gets the React app.
 check('product: app bundle survives', str_contains($productHtml, '/_next/static/'));
 check('product: document still closes its head', str_contains($productHtml, '</head>'));
+
+/* ------------------------------- the shells declare no metadata of their own */
+
+// The whole design rests on this. Next.js serialises a route's resolved
+// metadata into the RSC payload as well as into <head>, and React re-applies
+// it on hydration — so anything a shell declares comes back *after* the page
+// renders and overwrites, or sits beside, what was injected above. Stripping
+// <head> server-side cannot prevent that; only the shell not having the value
+// can. That is why both shells set these fields to `null`.
+//
+// The strings are searched for across the whole document, payload included:
+// a value that survives anywhere is a value React can put back.
+$newsShell = (string) file_get_contents($out . '/news/detail/index.html');
+
+/** Asserts a shell brings nothing of its own that hydration could reassert. */
+function shellIsBare(string $label, string $shell): void
+{
+    check("{$label}: no <title> of its own", !str_contains($shell, '<title>'));
+    check("{$label}: no canonical of its own", !str_contains($shell, 'canonical'));
+    check("{$label}: no description of its own", !str_contains($shell, 'name="description"'));
+    check("{$label}: no OGP of its own", !str_contains($shell, 'property="og:'));
+    check("{$label}: no Twitter card of its own", !str_contains($shell, 'name="twitter:'));
+    check("{$label}: no JSON-LD of its own", !str_contains($shell, 'application/ld+json'));
+
+    // What it *must* keep: the value render.php injects, so the two agree and
+    // hydration has nothing to contradict.
+    check("{$label}: keeps index, follow", str_contains(
+        $shell,
+        '<meta name="robots" content="index, follow, max-image-preview:large"/>',
+    ));
+    check("{$label}: says noindex nowhere", !str_contains($shell, 'noindex'));
+
+    // Still a working app, not a stripped document.
+    check("{$label}: still ships the app bundle", str_contains($shell, '/_next/static/'));
+}
+
+shellIsBare('news shell', $newsShell);
+shellIsBare('product shell', $shopShell);
+
+// `/shop/` is a real page and keeps everything the shells give up — nothing
+// injects into it, so nulling it would simply lose it.
+$shopPage = (string) file_get_contents($out . '/shop/index.html');
+check('/shop/: keeps its own title', str_contains($shopPage, '<title>オンラインショップ'));
+check('/shop/: keeps its own canonical', str_contains(
+    $shopPage,
+    '<link rel="canonical" href="https://amei-ayuko.jp/shop/"/>',
+));
+check('/shop/: keeps its CollectionPage graph', str_contains($shopPage, 'CollectionPage'));
 
 /* ------------------------------------------------------------------- news */
 
@@ -253,6 +304,63 @@ check('routing: the redirect never claims an article URL', $article1 !== null
 // The list itself is an ordinary exported page and must fall through to the
 // static routing further down the file.
 check('routing: /news/ is left alone', firstMatch('/news/', $htaccess) === null);
+
+/* ------------------------------------- and the same for the product shell */
+
+/** The `^shop…` rules, in the order Apache reads them.
+ *  @return list<array{pattern: string, target: string, flags: string}> */
+function shopRules(string $htaccess): array
+{
+    preg_match_all(
+        '/^RewriteRule\s+(\^shop\S*)\s+(\S+)\s+\[([^\]]*)\]/m',
+        $htaccess,
+        $matches,
+        PREG_SET_ORDER,
+    );
+
+    return array_map(
+        static fn (array $m): array => ['pattern' => $m[1], 'target' => $m[2], 'flags' => $m[3]],
+        $matches,
+    );
+}
+
+/** @return array{pattern: string, target: string, flags: string}|null */
+function firstShopMatch(string $path, string $htaccess): ?array
+{
+    foreach (shopRules($htaccess) as $rule) {
+        if (preg_match('#' . $rule['pattern'] . '#', ltrim($path, '/')) === 1) {
+            return $rule;
+        }
+    }
+
+    return null;
+}
+
+$shopUrl = firstShopMatch('/shop/', $htaccess);
+check('routing: /shop/ reaches the product renderer', $shopUrl !== null
+    && str_contains($shopUrl['target'], 'render.php?__render=product'));
+
+// That rule is the one guarded by `RewriteCond %{QUERY_STRING} product=`, so
+// it only fires for a product URL; without the query it falls through to the
+// exported page. The condition itself has to be there.
+check('routing: and only when a product is asked for', str_contains(
+    $htaccess,
+    'RewriteCond %{QUERY_STRING} (^|&)product=',
+));
+
+$productShell = firstShopMatch('/shop/product/', $htaccess);
+check('routing: /shop/product/ redirects to the shop', $productShell !== null
+    && $productShell['target'] === '/shop/'
+    && str_contains($productShell['flags'], 'R=301'));
+
+$productShellFile = firstShopMatch('/shop/product/index.html', $htaccess);
+check('routing: so does the file itself', $productShellFile !== null
+    && $productShellFile['target'] === '/shop/'
+    && str_contains($productShellFile['flags'], 'R=301'));
+
+// `^shop/?$` cannot reach `shop/product/`; the two must never trade places.
+check('routing: the shop rule never claims the shell URL', $productShell !== null
+    && !str_contains($productShell['target'], 'render.php'));
 
 // An article that was never edited must report the two dates identically.
 $unedited = $article;

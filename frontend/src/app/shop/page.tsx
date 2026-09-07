@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
-import { Suspense } from 'react';
 import JsonLd from '@/components/JsonLd';
-import ShopClient from '@/components/shop/ShopClient';
+import ShopShell from '@/components/shop/ShopShell';
 import { SITE } from '@/lib/site';
 
 const title = 'オンラインショップ｜アルバムフレーク・ラバースタンプ';
@@ -23,13 +22,14 @@ export const metadata: Metadata = {
 };
 
 /**
- * Shop shell.
+ * The shop itself, at `/shop/`.
  *
- * The page itself is fully static; the product list, the selected tab and the
- * product modal are all driven client-side from the URL. For crawlers,
- * `render.php` rewrites the head of this same HTML when a `?product=` query is
- * present, so each product URL still returns its own title, description,
- * canonical, OGP and Product JSON-LD.
+ * The page is static; the product list, the selected tab and the product modal
+ * are all driven client-side from the URL. A product URL
+ * (`/shop/?…&product={id}`) is a different document — see `shop/product/`,
+ * which carries no metadata of its own so that render.php's injected head is
+ * the only one. This one keeps its metadata, because `/shop/` is a real page
+ * that nothing injects into.
  */
 export default function ShopPage() {
   return (
@@ -44,28 +44,7 @@ export default function ShopPage() {
           isPartOf: { '@type': 'WebSite', name: SITE.name, url: `${SITE.url}/` },
         }}
       />
-      {/* useSearchParams requires a Suspense boundary under static export. */}
-      <Suspense fallback={<ShopFallback />}>
-        <ShopClient />
-      </Suspense>
+      <ShopShell />
     </>
-  );
-}
-
-function ShopFallback() {
-  return (
-    <section className="l-section l-section--cream">
-      <div className="l-page">
-        <div className="c-pageHead">
-          <span className="c-pageHead__en">Online Shop</span>
-          <h1 className="c-pageHead__jp">オンラインショップ</h1>
-        </div>
-        <ul className="c-grid" aria-busy="true">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <li key={i} className="c-skeleton c-skeleton__card" />
-          ))}
-        </ul>
-      </div>
-    </section>
   );
 }

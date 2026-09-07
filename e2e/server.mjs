@@ -3,13 +3,21 @@
  *
  * Mirrors the parts of the production .htaccess the tests depend on:
  * `/about` → `/about/index.html`, an unknown path → 404.html with a real 404
- * status, and `/news/{id}` → the exported article shell (which is what
- * render.php serves in production, minus the injected head).
+ * status, `/news/{id}` → the exported article shell and `/shop/?…&product=`
+ * → the exported product shell, each with a head standing in for the one
+ * render.php injects. The two shells are also 301'd away from their own URLs.
+ *
+ * The injected head matters because the suite has no PHP: what the browser
+ * tests is whether hydration leaves a dynamic head alone, and that needs a
+ * document whose head has been replaced the way production replaces it. The
+ * values below are fixtures, not production's — `Seo::inject` itself is
+ * checked against the real export in backend/tests/seo-inject-test.php.
  */
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { INJECTED } from './injected-head.mjs';
 
 const root = fileURLToPath(new URL('../frontend/out/', import.meta.url));
 const port = Number(process.argv[2] ?? 4173);
@@ -49,18 +57,85 @@ async function resolve(pathname) {
   const index = await readIfFile(join(root, safe, 'index.html'));
   if (index) return { body: index, path: `${safe}/index.html` };
 
-  // /news/{id} is served from the shared article shell, as render.php does.
-  if (/^\/news\/\d+\/?$/.test(safe)) {
+  return null;
+}
+
+/* ------------------------------------------------- the dynamic-SEO renderer */
+
+const escape = (value) =>
+  value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+/**
+ * Replaces the head of an exported document, as Seo::inject does: drop the
+ * tags the export produced so there is exactly one of each, then add ours.
+ */
+function inject(html, meta) {
+  const stripped = String(html)
+    .replace(/<title>.*?<\/title>/is, '')
+    .replace(/<meta name="(description|robots|twitter:[^"]*)"[^>]*>/gi, '')
+    .replace(/<meta property="og:[^"]*"[^>]*>/gi, '')
+    .replace(/<link rel="canonical"[^>]*>/gi, '')
+    .replace(/<script type="application\/ld\+json">.*?<\/script>/gis, '');
+
+  const head = [
+    `<title>${escape(meta.title)}</title>`,
+    `<meta name="description" content="${escape(meta.description)}">`,
+    '<meta name="robots" content="index, follow, max-image-preview:large">',
+    `<link rel="canonical" href="${escape(meta.canonical)}">`,
+    `<meta property="og:type" content="${meta.ogType}">`,
+    `<meta property="og:title" content="${escape(meta.title)}">`,
+    `<meta property="og:description" content="${escape(meta.description)}">`,
+    `<meta property="og:url" content="${escape(meta.canonical)}">`,
+    `<meta property="og:image" content="${escape(meta.image)}">`,
+    '<meta name="twitter:card" content="summary_large_image">',
+    `<meta name="twitter:title" content="${escape(meta.title)}">`,
+    `<meta name="twitter:description" content="${escape(meta.description)}">`,
+    `<meta name="twitter:image" content="${escape(meta.image)}">`,
+    ...meta.jsonLd.map(
+      (graph) =>
+        `<script type="application/ld+json">${JSON.stringify(graph).replace(/</g, '\\u003c')}</script>`,
+    ),
+  ].join('\n');
+
+  return stripped.replace(/<\/head>/i, `${head}\n</head>`);
+}
+
+/** What render.php would return for this URL, or null if it does not claim it. */
+async function render(url) {
+  if (/^\/news\/\d+\/?$/.test(url.pathname)) {
     const shell = await readIfFile(join(root, 'news/detail/index.html'));
-    if (shell) return { body: shell, path: 'news/detail/index.html' };
+    if (shell) return { body: inject(shell, INJECTED.news), path: 'news/detail/index.html' };
+  }
+
+  if (/^\/shop\/?$/.test(url.pathname) && url.searchParams.get('product')) {
+    const shell = await readIfFile(join(root, 'shop/product/index.html'));
+    if (shell) return { body: inject(shell, INJECTED.product), path: 'shop/product/index.html' };
   }
 
   return null;
 }
 
+/** The shells are 301'd away from their own URLs, as .htaccess does. */
+const REDIRECTS = new Map([
+  ['/news/detail', '/news/'],
+  ['/news/detail/', '/news/'],
+  ['/news/detail/index.html', '/news/'],
+  ['/shop/product', '/shop/'],
+  ['/shop/product/', '/shop/'],
+  ['/shop/product/index.html', '/shop/'],
+]);
+
 createServer(async (req, res) => {
   const url = new URL(req.url ?? '/', 'http://localhost');
-  const found = await resolve(url.pathname);
+
+  const redirect = REDIRECTS.get(url.pathname);
+  if (redirect) {
+    res.writeHead(301, { location: redirect });
+    res.end();
+    return;
+  }
+
+  const found = (await render(url)) ?? (await resolve(url.pathname));
 
   if (found) {
     res.writeHead(200, {

@@ -106,6 +106,13 @@ RewriteRule ^news/detail/index\.html$ /news/ [R=301,L]
 RewriteCond %{QUERY_STRING} (^|&)product=([A-Za-z0-9_-]+)($|&)
 RewriteRule ^shop/?$ /render.php?__render=product [L,QSA]
 
+# The shell that rule serves, for the same reason as /news/detail/ above: a
+# real file on disk, reachable at its own URL, holding a shop with no metadata
+# of its own. `^shop/?$` cannot match `shop/product/`, so the two never
+# compete, and render.php reads the shell from disk rather than over HTTP.
+RewriteRule ^shop/product/?$ /shop/ [R=301,L]
+RewriteRule ^shop/product/index\.html$ /shop/ [R=301,L]
+
 # Generated sitemap
 RewriteRule ^sitemap\.xml$ /sitemap.php [L]
 
