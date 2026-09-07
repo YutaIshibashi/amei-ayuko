@@ -31,6 +31,19 @@ $e = static fn (?string $v): string => Sanitizer::e($v);
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     Csrf::requirePost();
     $action = (string) ($_POST['action'] ?? '');
+
+    // `create` is the one action with nothing to act on yet — it *makes* the
+    // draft the editor then works against — so it must not be gated on an id.
+    // It was, which meant the button posted, fell straight through to the
+    // redirect below, and looked like nothing had happened.
+    if ($action === 'create') {
+        $newId = NewsRepository::createDraft();
+        header('Location: /admin/news/edit.php?id=' . $newId);
+        exit;
+    }
+
+    // Everything below changes an existing article, so a usable id stays
+    // required: without one there is nothing to publish, hide or delete.
     $id = (int) ($_POST['id'] ?? 0);
 
     if ($id > 0) {
@@ -47,10 +60,6 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 NewsRepository::delete($id);
                 Session::flash('記事を削除しました。削除済み一覧から復元できます。');
                 break;
-            case 'create':
-                $newId = NewsRepository::createDraft();
-                header('Location: /admin/news/edit.php?id=' . $newId);
-                exit;
         }
     }
 

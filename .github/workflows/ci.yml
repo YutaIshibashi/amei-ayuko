@@ -161,6 +161,12 @@ jobs:
       - name: Pending products lifecycle
         run: php backend/tests/pending-products-test.php
 
+      # Drives the admin over real HTTP — login, CSRF token, POST, redirect.
+      # The bug this covers left no trace: the button posted, the handler fell
+      # through, and the page looked normal.
+      - name: Admin news actions
+        run: php backend/tests/admin-news-actions-test.php
+
       - name: Check migrations parse
         run: |
           set -euo pipefail
