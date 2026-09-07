@@ -115,6 +115,13 @@ jobs:
       - name: Runtime compatibility
         run: php backend/tests/runtime-compat-test.php
 
+      # Builds the real release tree and runs every PHP entry point against a
+      # stub bootstrap. The repository layout is not the deployed layout, so
+      # this is the only check that sees the depth each file actually resolves
+      # `_app/bootstrap.php` from.
+      - name: Release layout
+        run: php backend/tests/release-layout-test.php
+
       - name: Check migrations parse
         run: |
           set -euo pipefail

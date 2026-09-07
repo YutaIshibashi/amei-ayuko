@@ -9,7 +9,7 @@ declare(strict_types=1);
  * measurement id and the shop URLs are meant to be in the page anyway.
  */
 
-require_once dirname(__DIR__, 2) . '/_app/bootstrap.php';
+require_once dirname(__DIR__) . '/_app/bootstrap.php';
 
 use Amei\Http;
 use Amei\Maintenance;
