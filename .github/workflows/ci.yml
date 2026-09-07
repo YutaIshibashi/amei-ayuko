@@ -140,7 +140,10 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          # 22, not 20: undici 8 requires it (see minne-sync.yml). This job has
+          # to match the version the sync actually runs on, or a typecheck here
+          # says nothing about whether the nightly job will start.
+          node-version: 22
           cache: npm
           cache-dependency-path: scraper/package-lock.json
 
