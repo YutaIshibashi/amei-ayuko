@@ -89,40 +89,14 @@ jobs:
         run: composer install --no-dev --no-interaction --no-progress --prefer-dist --optimize-autoloader
 
       - name: Assemble the release directory
+        # Shared with backend/tests/release-layout-test.php, which builds the
+        # same tree and verifies that every PHP entry point resolves
+        # _app/bootstrap.php at its deployed depth. Keeping the assembly in one
+        # place is what makes that check meaningful.
         run: |
           set -euo pipefail
-          RELEASE="$RUNNER_TEMP/release"
-          mkdir -p "$RELEASE"
-
-          # 1. The static export becomes the document root …
-          cp -R frontend/out/. "$RELEASE/"
-
-          # … except /data, which the sync pipeline owns in production. Shipping
-          # the development fixture would overwrite the live catalogue.
-          rm -rf "$RELEASE/data"
-
-          # 2. Public PHP over the top (api/, admin/, render.php, .htaccess …)
-          cp -R backend/public/. "$RELEASE/"
-
-          # 3. The private application directory, denied by .htaccess.
-          mkdir -p "$RELEASE/_app"
-          cp backend/bootstrap.php "$RELEASE/_app/"
-          cp -R backend/src "$RELEASE/_app/src"
-          cp -R backend/templates "$RELEASE/_app/templates"
-          cp -R backend/vendor "$RELEASE/_app/vendor"
-
-          # Writable runtime directories. Nothing in them is deployed; the
-          # rsync excludes below keep the server's copies untouched.
-          mkdir -p "$RELEASE/_app/storage/logs" \
-                   "$RELEASE/_app/storage/sync" \
-                   "$RELEASE/_app/storage/cache/htmlpurifier"
-
-          # Never ship secrets or a local environment file.
-          find "$RELEASE" -name '.env' -delete
-          find "$RELEASE" -name '*.md' -not -path "*/vendor/*" -delete
-
-          echo "release assembled:"
-          du -sh "$RELEASE"
+          ops/build-release.sh "$RUNNER_TEMP/release"
+          du -sh "$RUNNER_TEMP/release"
 
       - name: Set up SSH
         env:
