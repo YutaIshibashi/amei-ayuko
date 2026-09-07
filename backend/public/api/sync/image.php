@@ -12,7 +12,7 @@ declare(strict_types=1);
  * that the bytes really are a WebP and files them under a safe path.
  */
 
-require_once dirname(__DIR__, 3) . '/_app/bootstrap.php';
+require_once dirname(__DIR__, 2) . '/_app/bootstrap.php';
 require_once __DIR__ . '/_auth.php';
 
 use Amei\Http;

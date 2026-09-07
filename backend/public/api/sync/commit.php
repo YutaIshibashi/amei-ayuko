@@ -13,7 +13,7 @@ declare(strict_types=1);
  * Body: { "syncId": "...", "imageSuccess": n, "imageFailure": n, "mainImageFailure": n }
  */
 
-require_once dirname(__DIR__, 3) . '/_app/bootstrap.php';
+require_once dirname(__DIR__, 2) . '/_app/bootstrap.php';
 require_once __DIR__ . '/_auth.php';
 
 use Amei\Database;

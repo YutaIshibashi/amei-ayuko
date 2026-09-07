@@ -32,20 +32,35 @@ final class Database
         $dsn = sprintf('mysql:host=%s;port=%d;dbname=%s;charset=utf8mb4', $host, $port, $name);
 
         try {
-            self::$pdo = new PDO($dsn, $user, $pass, [
+            $pdo = new PDO($dsn, $user, $pass, [
                 PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 // Real prepared statements, so the driver never has to
                 // interpolate values itself.
                 PDO::ATTR_EMULATE_PREPARES   => false,
                 PDO::ATTR_STRINGIFY_FETCHES  => false,
-                PDO::MYSQL_ATTR_INIT_COMMAND => "SET time_zone = '+09:00'",
             ]);
+
+            // The session timezone is set here rather than through
+            // PDO::MYSQL_ATTR_INIT_COMMAND. That constant is deprecated in PHP
+            // 8.5 in favour of Pdo\Mysql::ATTR_INIT_COMMAND, which does not
+            // exist before 8.4 — so neither constant works across the 8.2–8.5
+            // range this project supports. A plain statement does, and needs
+            // no version detection.
+            //
+            // The connection is not persistent, so there is no reconnect for
+            // an init command to cover: running it once here is equivalent.
+            $pdo->exec("SET time_zone = '+09:00'");
         } catch (\PDOException $e) {
             // The message can contain credentials — log a redacted note only.
             Logger::error(Logger::CHANNEL_APP, 'Database connection failed', ['code' => $e->getCode()]);
             throw new \RuntimeException('database_unavailable', 0, $e);
         }
+
+        // Assigned only once the session is fully configured, so a failure
+        // part-way through cannot leave a cached connection on the wrong
+        // timezone.
+        self::$pdo = $pdo;
 
         return self::$pdo;
     }

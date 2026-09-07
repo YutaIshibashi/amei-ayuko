@@ -68,14 +68,22 @@ jobs:
           retention-days: 7
 
   php:
-    name: PHP (lint, PHPStan)
+    name: PHP ${{ matrix.php }} (lint, PHPStan)
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 8.2 is the floor this project claims to support; 8.5 is what
+        # production actually runs. Testing only the floor is how PHP 8.5's
+        # deprecation of PDO::MYSQL_ATTR_INIT_COMMAND reached production as a
+        # 500 on every database-backed endpoint while CI stayed green.
+        php: ['8.2', '8.5']
     steps:
       - uses: actions/checkout@v4
 
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: ${{ matrix.php }}
           extensions: mbstring, gd, pdo_mysql, json, curl
           coverage: none
           tools: composer:v2
@@ -84,8 +92,8 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ~/.composer/cache
-          key: composer-${{ hashFiles('backend/composer.lock') }}
-          restore-keys: composer-
+          key: composer-${{ matrix.php }}-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: composer-${{ matrix.php }}-
 
       - name: Install
         working-directory: backend
@@ -101,6 +109,18 @@ jobs:
       - name: PHPStan
         working-directory: backend
         run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+
+      # Needs no database: it checks which failure surfaces, and that a
+      # deprecation on this PHP version does not abort the request.
+      - name: Runtime compatibility
+        run: php backend/tests/runtime-compat-test.php
+
+      # Builds the real release tree and runs every PHP entry point against a
+      # stub bootstrap. The repository layout is not the deployed layout, so
+      # this is the only check that sees the depth each file actually resolves
+      # `_app/bootstrap.php` from.
+      - name: Release layout
+        run: php backend/tests/release-layout-test.php
 
       - name: Check migrations parse
         run: |
@@ -141,7 +161,9 @@ jobs:
 
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          # Matches production, so the vendor tree is resolved and the checks
+          # run against the same platform the site actually uses.
+          php-version: '8.5'
           extensions: mbstring, gd, pdo_mysql, json, curl
           coverage: none
           tools: composer:v2

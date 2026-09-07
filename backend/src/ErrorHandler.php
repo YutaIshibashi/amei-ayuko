@@ -17,6 +17,37 @@ final class ErrorHandler
             if ((error_reporting() & $severity) === 0) {
                 return false; // suppressed with @ — respect that
             }
+
+            // A deprecation is not a failure: it says today's behaviour still
+            // works and will change in some future version. Turning one into
+            // an exception means a PHP upgrade can take the site down for a
+            // notice — which is exactly what happened when PHP 8.5 deprecated
+            // PDO::MYSQL_ATTR_INIT_COMMAND and every database-backed endpoint
+            // started returning 500. They are logged so they still get fixed,
+            // and the request continues.
+            //
+            // Warnings and notices keep throwing on purpose: those report that
+            // something has already gone wrong, and failing loudly beats
+            // limping on with a bad value.
+            if ($severity === E_DEPRECATED || $severity === E_USER_DEPRECATED) {
+                // The text goes in the log message rather than the context:
+                // Logger redacts a context key called `message`, since that is
+                // what enquiry bodies are stored under.
+                // Deduplicated per request so a deprecation inside a loop
+                // cannot fill the day's log with one repeated line.
+                static $seen = [];
+                $key = $file . ':' . $line;
+                if (!isset($seen[$key])) {
+                    $seen[$key] = true;
+                    Logger::warning(
+                        Logger::CHANNEL_APP,
+                        'PHP deprecation: ' . $message,
+                        ['file' => basename($file), 'line' => $line],
+                    );
+                }
+                return true;
+            }
+
             throw new \ErrorException($message, 0, $severity, $file, $line);
         });
 

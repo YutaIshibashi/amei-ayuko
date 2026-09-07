@@ -136,7 +136,7 @@ TOPページの初回表示時に、ロゴと手描きラインのオープニ�
 | | バージョン | 用途 |
 |---|---|---|
 | Node.js | 20.11 以上 | フロントエンドのビルド、スクレイパー |
-| PHP | 8.1 以上（本番は 8.2 系推奨） | API・管理画面 |
+| PHP | 8.2 以上（**本番は 8.5**） | API・管理画面 |
 | MySQL | 5.7 以上 / MariaDB 10.4 以上 | News・設定・同期履歴 |
 | Composer | 2.x | PHP依存パッケージ |
 
@@ -450,7 +450,7 @@ MAX_LIST_PAGES=1 npm run sync -- --dry-run --limit 3
 
 | ワークフロー | 契機 | 内容 |
 |---|---|---|
-| `ci.yml` | Pull Request / mainへのpush | lint・typecheck・build・`php -l`・PHPStan・E2E |
+| `ci.yml` | Pull Request / mainへのpush | lint・typecheck・build・`php -l`・PHPStan（**PHP 8.2 と 8.5 の両方**）・ランタイム互換チェック・動的SEO・E2E |
 | `deploy.yml` | mainへのpush / 手動 | 再チェック → ビルド → rsync → 疎通確認 |
 | `minne-sync.yml` | 毎日15:00 UTC（00:00 JST）/ 手動 | minne同期 |
 
@@ -459,8 +459,10 @@ MAX_LIST_PAGES=1 npm run sync -- --dry-run --limit 3
 - **mainへの直接pushはしません。** 必ずPull Requestを経由します。
 - GitHubの Settings → Branches で `main` に保護ルールを設定し、
   「Require status checks to pass before merging」で
-  `Frontend (lint, typecheck, build)` `PHP (lint, PHPStan)` `E2E (Playwright)`
-  を必須にしてください（この設定はリポジトリ側の操作が必要です）。
+  `Frontend (lint, typecheck, build)` `PHP 8.2 (lint, PHPStan)`
+  `PHP 8.5 (lint, PHPStan)` `E2E (Playwright)`
+  `Dynamic SEO (render.php ↔ static export)` を必須にしてください
+  （この設定はリポジトリ側の操作が必要です）。
 - Playwrightの失敗時は Screenshot / Video / Trace / HTMLレポートが
   Artifactとして7日間保存されます。
 

@@ -9,7 +9,7 @@ declare(strict_types=1);
  * still exists in the current catalogue — the related product card.
  */
 
-require_once dirname(__DIR__, 3) . '/_app/bootstrap.php';
+require_once dirname(__DIR__, 2) . '/_app/bootstrap.php';
 
 use Amei\Http;
 use Amei\Maintenance;
