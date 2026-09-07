@@ -164,6 +164,10 @@ async function main(): Promise<void> {
     // Release the staging area rather than leaving it for the 24h sweep.
     await client.abort(syncId, summarise(error));
     throw error;
+  } finally {
+    // The client keeps its own dispatcher, so its sockets have to be closed
+    // explicitly or the process lingers after the run.
+    await client.close();
   }
 }
 
