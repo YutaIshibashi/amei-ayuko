@@ -37,7 +37,10 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          # undici 8 calls webidl.util.markAsUncloneable, which only exists
+          # from Node 22.19. On 20 the sync died with a TypeError after npm
+          # had already warned EBADENGINE.
+          node-version: 22
           cache: npm
           cache-dependency-path: scraper/package-lock.json
 
