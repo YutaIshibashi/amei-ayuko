@@ -14,9 +14,20 @@ declare(strict_types=1);
  * against production to confirm what has been applied.
  */
 
-// Repository layout: the app dir is backend/, not the deployed _app/.
-putenv('AMEI_APP_DIR=' . (getenv('AMEI_APP_DIR') ?: dirname(__DIR__) . '/backend'));
-require_once (getenv('AMEI_APP_DIR')) . '/bootstrap.php';
+/**
+ * Works from either layout without being told which:
+ *   repository … ops/            → app dir is ../backend
+ *   deployed   … _app/ops/       → app dir is ..
+ * AMEI_APP_DIR still wins if it is set explicitly.
+ */
+$appDir = getenv('AMEI_APP_DIR') ?: null;
+if ($appDir === null) {
+    $deployed = dirname(__DIR__);                 // _app/
+    $repo = dirname(__DIR__) . '/backend';        // backend/
+    $appDir = is_file($deployed . '/bootstrap.php') ? $deployed : $repo;
+}
+putenv('AMEI_APP_DIR=' . $appDir);
+require_once $appDir . '/bootstrap.php';
 
 use Amei\Database;
 
@@ -25,7 +36,12 @@ if (PHP_SAPI !== 'cli') {
     exit(1);
 }
 
-$migrationsDir = dirname(__DIR__) . '/backend/migrations';
+// Migrations are not deployed (they are applied by hand through phpMyAdmin),
+// so on the server this directory simply will not exist. `status` still works
+// there: it reports what the database says has been applied.
+$migrationsDir = is_dir(dirname(__DIR__) . '/backend/migrations')
+    ? dirname(__DIR__) . '/backend/migrations'
+    : $appDir . '/migrations';
 $command = $argv[1] ?? 'status';
 
 $files = array_values(array_filter(
@@ -44,6 +60,14 @@ try {
 }
 
 if ($command === 'status') {
+    if ($files === []) {
+        fwrite(STDOUT, "No migration files here (expected on the server).\n");
+        fwrite(STDOUT, "Applied according to the database:\n");
+        foreach (array_keys($applied) as $name) {
+            fwrite(STDOUT, "  {$name}\n");
+        }
+        exit(0);
+    }
     foreach ($files as $file) {
         $name = basename($file);
         fwrite(STDOUT, sprintf("%-40s %s\n", $name, isset($applied[$name]) ? 'applied' : 'PENDING'));

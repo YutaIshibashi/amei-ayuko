@@ -8,7 +8,7 @@
 export interface ScraperConfig {
   /** minne shop URL to crawl, e.g. https://minne.com/@amei-ayuko */
   shopUrl: string;
-  /** Site origin hosting the sync API, e.g. https://amei-ayuko.com */
+  /** Site origin hosting the sync API, e.g. https://amei-ayuko.jp */
   siteUrl: string;
   /** Bearer token shared with the PHP endpoints. */
   apiKey: string;
@@ -63,7 +63,7 @@ export function loadConfig(argv: string[]): ScraperConfig {
     maxProducts,
     userAgent:
       process.env.SCRAPER_USER_AGENT ??
-      'amei-ayuko-site-sync/1.0 (+https://amei-ayuko.com; contact via site)',
+      'amei-ayuko-site-sync/1.0 (+https://amei-ayuko.jp; contact via site)',
   };
 }
 

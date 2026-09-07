@@ -7,4 +7,4 @@ Disallow: /api/
 Disallow: /_app/
 Disallow: /maintenance/
 
-Sitemap: https://amei-ayuko.com/sitemap.xml
+Sitemap: https://amei-ayuko.jp/sitemap.xml

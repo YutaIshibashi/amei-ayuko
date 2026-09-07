@@ -64,6 +64,16 @@ else
   echo "warning: backend/vendor not found — run 'composer install' in backend/" >&2
 fi
 
+# CLI tooling, inside _app/ rather than the web root: Apache denies that
+# directory, so the scripts are reachable over SSH and not over HTTP. They have
+# to live on the server because Lolipop's MySQL host resolves only inside their
+# network — production cannot be reached from a laptop, so without this there
+# is no way to create the administrator account at all.
+# Only the two operational scripts ship; the local dev server does not belong
+# in production.
+mkdir -p "$TARGET/_app/ops"
+cp "$ROOT/ops/create-admin.php" "$ROOT/ops/migrate.php" "$TARGET/_app/ops/"
+
 # Writable runtime directories. Nothing in them is deployed; the deploy's rsync
 # excludes keep the server's copies untouched.
 mkdir -p "$TARGET/_app/storage/logs" \

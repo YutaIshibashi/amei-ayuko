@@ -11,7 +11,7 @@ export const SITE = {
   name: 'amei ayuko',
   nameJa: 'amei ayuko（アメイ アユコ）',
   /** Absolute origin, needed for canonical / OGP URLs at build time. */
-  url: (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://amei-ayuko.com').replace(/\/$/, ''),
+  url: (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://amei-ayuko.jp').replace(/\/$/, ''),
   description:
     '3児のママがつくる、手描きのアルバムフレーク・ラバースタンプ。子どもの成長をかわいく残す紙モノと、ロゴ・名刺・チラシのデザイン制作。',
   concept: 'ママの“あったらいいな”をカタチに。',
