@@ -48,9 +48,27 @@ jobs:
         working-directory: backend
         run: |
           composer install --no-interaction --no-progress --prefer-dist
-          find src public ../ops -name '*.php' -print0 | xargs -0 -n1 -P4 php -l > /dev/null
-          php -l ../backend/bootstrap.php
+          find src public tests ../ops -name '*.php' -print0 | xargs -0 -n1 -P4 php -l > /dev/null
+          php -l bootstrap.php
           vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+
+      # The guards below exist because each one corresponds to a production
+      # outage. CI runs them too, but CI and Deploy are independent workflows
+      # triggered by the same push: a red CI run does not stop a deploy. So the
+      # checks that protect production are re-run here, on the commit that is
+      # actually about to be uploaded.
+
+      # Builds the release tree and runs every PHP entry point against a stub
+      # bootstrap. Catches an entry point whose `_app/bootstrap.php` path is
+      # wrong for its deployed depth — invisible locally, a 500 in production.
+      - name: Release layout
+        run: php backend/tests/release-layout-test.php
+
+      # Catches a PHP diagnostic that would abort a request on this version,
+      # which is how a deprecation in 8.5 took every database-backed endpoint
+      # down while the pipeline stayed green.
+      - name: Runtime compatibility
+        run: php backend/tests/runtime-compat-test.php
 
   deploy:
     name: Build and deploy
@@ -87,6 +105,14 @@ jobs:
       - name: Install production dependencies for PHP
         working-directory: backend
         run: composer install --no-dev --no-interaction --no-progress --prefer-dist --optimize-autoloader
+
+      # The last guard that cannot run in `checks`: it needs the static export,
+      # which only exists after the build above. render.php rewrites the head of
+      # that export, and a Next.js upgrade can break the seam silently — the
+      # page still renders, but crawlers get the wrong metadata. Runs before
+      # anything is uploaded.
+      - name: Dynamic SEO (render.php ↔ static export)
+        run: php backend/tests/seo-inject-test.php
 
       - name: Assemble the release directory
         # Shared with backend/tests/release-layout-test.php, which builds the
