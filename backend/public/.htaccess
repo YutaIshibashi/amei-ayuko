@@ -43,6 +43,12 @@ ServerSignature Off
     <FilesMatch "(^\.|composer\.(json|lock)|\.md$|\.sql$|\.flag$)">
         Require all denied
     </FilesMatch>
+    # Files named _something.php are partials included by their siblings
+    # (_layout.php, _auth.php), never requested directly. They emit nothing on
+    # their own, but there is no reason to serve them.
+    <FilesMatch "^_.*\.php$">
+        Require all denied
+    </FilesMatch>
 </IfModule>
 
 RewriteEngine On
