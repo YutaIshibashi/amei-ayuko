@@ -7,6 +7,8 @@
   "scripts": {
     "sync": "tsx src/index.ts",
     "sync:dry": "tsx src/index.ts --dry-run",
+    "test": "node --import tsx --test --test-timeout=20000 test/*.test.ts",
+    "smoke:upload": "tsx src/smoke-upload.ts",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit"
   },

@@ -107,15 +107,21 @@ async function main(): Promise<void> {
 
   /* --- 4. stage --------------------------------------------------------- */
   const client = new SyncClient(config);
-  const started = await client.start();
-  const syncId = started.syncId;
-  log.info('sync run opened', {
-    syncId,
-    previousSuccess: started.previousSuccess,
-    previousCount: started.previousCount,
-  });
+  // Declared out here so the catch below knows whether a session was ever
+  // opened — and so `start()` itself sits inside the cleanup scope. It has its
+  // own dispatcher now, and a start that throws would otherwise leak the
+  // sockets and keep the process from exiting.
+  let syncId: string | null = null;
 
   try {
+    const started = await client.start();
+    syncId = started.syncId;
+    log.info('sync run opened', {
+      syncId,
+      previousSuccess: started.previousSuccess,
+      previousCount: started.previousCount,
+    });
+
     const byProduct = groupOutcomes(outcomes);
 
     const payload: ProductPayload[] = scraped.map((product) => ({
@@ -162,8 +168,16 @@ async function main(): Promise<void> {
     await writeSummary(result.total, result.added, result.removed, imageSuccess, imageFailure);
   } catch (error) {
     // Release the staging area rather than leaving it for the 24h sweep.
-    await client.abort(syncId, summarise(error));
+    // Only meaningful once a session exists; a failed `start()` has nothing
+    // to abort.
+    if (syncId !== null) {
+      await client.abort(syncId, summarise(error));
+    }
     throw error;
+  } finally {
+    // The client keeps its own dispatcher, so its sockets have to be closed
+    // explicitly or the process lingers after the run.
+    await client.close();
   }
 }
 
