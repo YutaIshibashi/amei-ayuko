@@ -81,7 +81,15 @@ header('X-Robots-Tag: noindex, nofollow');
   h1 { font-family:'Zen Maru Gothic',sans-serif; font-size:1.9rem; line-height:1.5; margin:0 0 12px; }
   .meta { display:flex; gap:12px; align-items:center; color:#a5978f; font-size:.85rem; margin-bottom:24px; }
   .tag { background:#c3ded7; color:#2f5e53; border-radius:999px; padding:2px 12px; font-size:.75rem; font-weight:700; }
-  .hero { width:100%; border-radius:20px; margin-bottom:28px; }
+  /* The public article's hero is a 16:9 box the image is cropped into —
+     frontend `.a-ratio--16x9` plus `.c-article__hero`. Sizing the image
+     itself instead leaves the `height` attribute at the file's real pixel
+     height, so a 1200x1200 upload was drawn 720x1200. Radius and margin are
+     the public `--r-hand` and `--s-6`, because this page exists to show what
+     the article will look like once published. */
+  .hero { position:relative; width:100%; aspect-ratio:16/9; overflow:hidden;
+          border-radius:18px 26px 20px 24px; margin-bottom:2rem; background:#fff7ef; }
+  .hero img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
   .body > * + * { margin-top:1rem; }
   .body h2 { font-family:'Zen Maru Gothic',sans-serif; font-size:1.35rem; margin-top:2.4rem;
              padding-bottom:.4rem; border-bottom:2px dashed #ddcec0; }
@@ -111,9 +119,11 @@ header('X-Robots-Tag: noindex, nofollow');
   <h1><?= ((string) $article['title']) === '' ? '（無題）' : $e((string) $article['title']) ?></h1>
 
   <?php if (($article['image_path'] ?? '') !== ''): ?>
-    <img class="hero" src="<?= $e((string) $article['image_path']) ?>" alt=""
-         width="<?= (int) ($article['image_width'] ?? 1200) ?>"
-         height="<?= (int) ($article['image_height'] ?? 800) ?>">
+    <div class="hero">
+      <img src="<?= $e((string) $article['image_path']) ?>" alt=""
+           width="<?= (int) ($article['image_width'] ?? 1200) ?>"
+           height="<?= (int) ($article['image_height'] ?? 800) ?>">
+    </div>
   <?php endif; ?>
 
   <?php /* Already sanitised against the allow-list before storage. */ ?>
