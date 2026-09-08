@@ -30,8 +30,8 @@ export const SHOPS = [
   { key: 'rakuma',  label: 'ラクマ',   url: 'https://fril.jp/shop/1e35a79cae65e567618ec8a3143e05f4',             primary: false },
 ] as const;
 
-export const INSTAGRAM_URL = 'https://www.instagram.com/amei_ayuko/';
-export const INSTAGRAM_HANDLE = '@amei_ayuko';
+export const INSTAGRAM_URL = 'https://www.instagram.com/ayuko_amei/';
+export const INSTAGRAM_HANDLE = '@ayuko_amei';
 
 /** Header navigation. Deliberately only four items. */
 export const NAV = [

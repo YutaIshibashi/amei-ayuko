@@ -47,6 +47,37 @@ jobs:
           NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.TURNSTILE_SITE_KEY }}
         run: npm run build
 
+      # Every Instagram link in the repository has to name the account
+      # `INSTAGRAM_URL` does. They drifted once: a handle correction reached
+      # the constant, the settings seed, the mail fallback and the test
+      # fixture, and missed the link in the 500 page — which nothing renders,
+      # so nothing caught it. Reading the account out of the constant rather
+      # than hard-coding it means this keeps working the next time it changes.
+      - name: Instagram links agree on the account
+        run: |
+          set -euo pipefail
+          canonical=$(sed -n "s#^export const INSTAGRAM_URL = '\(.*\)';#\1#p" frontend/src/lib/site.ts)
+          handle=$(sed -n "s#^export const INSTAGRAM_HANDLE = '@\(.*\)';#\1#p" frontend/src/lib/site.ts)
+          test -n "$canonical" || { echo "could not read INSTAGRAM_URL"; exit 1; }
+          test -n "$handle" || { echo "could not read INSTAGRAM_HANDLE"; exit 1; }
+
+          test "$canonical" = "https://www.instagram.com/$handle/" || {
+            echo "INSTAGRAM_HANDLE (@$handle) does not match INSTAGRAM_URL ($canonical)"
+            exit 1
+          }
+
+          # -I skips binaries; git ls-files keeps it to tracked sources, so
+          # neither node_modules nor a stale export can fail the build.
+          strays=$(git ls-files -z \
+            | xargs -0 grep -oIn 'https://www\.instagram\.com/[A-Za-z0-9._]\+/\?' \
+            | grep -v ":$canonical$" || true)
+          if [ -n "$strays" ]; then
+            echo "these Instagram links do not point at $canonical:"
+            echo "$strays"
+            exit 1
+          fi
+          echo "every Instagram link points at $canonical"
+
       - name: Verify the export produced the expected entry points
         working-directory: frontend
         run: |

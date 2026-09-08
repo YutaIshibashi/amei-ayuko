@@ -17,7 +17,7 @@ export const SETTINGS = {
   // Empty on purpose: no GA4 script must load during the tests.
   ga4MeasurementId: '',
   searchConsoleVerification: '',
-  instagramUrl: 'https://www.instagram.com/amei_ayuko/',
+  instagramUrl: 'https://www.instagram.com/ayuko_amei/',
   minneUrl: 'https://minne.com/@amei-ayuko',
   creemaUrl: 'https://www.creema.jp/c/amei-ayuko',
   mercariUrl: 'https://jp.mercari.com/user/profile/417108594',
