@@ -51,7 +51,8 @@ jobs:
         working-directory: frontend
         run: |
           set -euo pipefail
-          for path in index.html 404.html shop/index.html about/index.html \
+          for path in index.html 404.html shop/index.html shop/product/index.html \
+                      about/index.html \
                       contact/index.html contact/thanks/index.html \
                       news/index.html news/detail/index.html \
                       privacy-policy/index.html maintenance/index.html; do

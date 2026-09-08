@@ -7,7 +7,12 @@ declare(strict_types=1);
  *
  * Apache routes two shapes here:
  *   /news/{id}                        → the article shell
- *   /shop/?…&product={id}             → the shop shell with a product open
+ *   /shop/?…&product={id}             → the product shell
+ *
+ * Both shells are exported documents that declare no metadata of their own, so
+ * the head injected below is the only one the page ever has — including after
+ * React hydrates, which is when a shell's own metadata would otherwise come
+ * back out of the RSC payload and overwrite it.
  *
  * In both cases the *same* exported Next.js document is returned, so the
  * visitor-facing UI is untouched; only <head> is rewritten, with the title,
@@ -167,7 +172,10 @@ if ($type === 'product') {
         . '<p><a href="' . Sanitizer::e((string) $product['url']) . '" rel="noopener">minneで購入する</a></p>'
         . '</article>';
 
-    serve('shop/index.html', [
+    // The metadata-free shell, not `/shop/`'s own document: that one declares
+    // its own title, canonical, OGP and CollectionPage graph, and Next.js puts
+    // every one of them back on hydration, over the product's.
+    serve('shop/product/index.html', [
         'title'       => $title,
         'description' => $description,
         'canonical'   => $canonical,
