@@ -85,13 +85,23 @@ export default function ShopClient() {
 
   const closeProduct = useCallback(() => {
     if (pushedByUs.current) {
+      // Opened from the list: this document is `/shop/`'s own, head and all,
+      // so stepping back through history is both the cheapest close and the
+      // one that restores exactly what was there before.
       pushedByUs.current = false;
       window.history.back();
-    } else {
-      // Arrived directly on the product URL: replace it so Back still leaves
-      // the site instead of re-opening the modal.
-      window.history.replaceState(null, '', `/shop/?category=${category}`);
+      return;
     }
+
+    // Arrived directly on the product URL. This document is not `/shop/` — it
+    // is the metadata-free product shell with the product's title, canonical,
+    // OGP and Product JSON-LD injected into it by render.php. Rewriting only
+    // the URL would leave every one of those describing a product that is no
+    // longer on screen, at a URL that is now the listing's.
+    //
+    // So fetch the listing for real. `replace`, not `assign`, so Back still
+    // leaves the site rather than re-opening the modal.
+    window.location.replace(`/shop/?category=${category}`);
   }, [category]);
 
   const visible = useMemo(

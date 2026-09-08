@@ -180,6 +180,81 @@ test.describe('Dynamic SEO after hydration', () => {
     expect(meta.description).toHaveLength(1);
   });
 
+  /* --------------------------------- leaving a product URL you arrived on */
+
+  test('closing a product you arrived on directly hands the head back', async ({ page }) => {
+    await page.goto('/shop/?category=album-flake&product=1001');
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // What we are leaving: the product shell, with the product's head.
+    expectOnly(await head(page), INJECTED.product);
+
+    // Survives a SPA close, not a real navigation — which is the difference
+    // this test exists to catch.
+    await page.evaluate(() => {
+      (window as unknown as { __sameDocument?: boolean }).__sameDocument = true;
+    });
+
+    await page.getByRole('button', { name: '商品の詳細を閉じる' }).click();
+    await expect(page).toHaveURL('/shop/?category=album-flake');
+    await expect(page.getByRole('dialog')).toBeHidden();
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+
+    // The listing was fetched for real: this document is `/shop/`'s own, not
+    // the product shell with its URL rewritten.
+    expect(
+      await page.evaluate(
+        () => (window as unknown as { __sameDocument?: boolean }).__sameDocument ?? false,
+      ),
+    ).toBe(false);
+
+    const meta = await head(page);
+    expect(meta.canonical).toEqual(['https://amei-ayuko.jp/shop/']);
+    expect(meta.titles).toEqual(['オンラインショップ｜アルバムフレーク・ラバースタンプ | amei ayuko']);
+    expect(meta.description).toEqual([
+      '手描きのアルバムフレークとラバースタンプの一覧です。育児アルバムや成長記録づくりにぴったりの紙モノを、minneにて販売しています。',
+    ]);
+    expect(meta.ogUrl).toEqual(['https://amei-ayuko.jp/shop/']);
+
+    // The product's graphs go with it; the listing's comes back.
+    expect(meta.jsonLdTypes).toEqual(['CollectionPage']);
+
+    expect(meta.robots).toEqual(['index, follow, max-image-preview:large']);
+    expect(meta.html).not.toContain('noindex');
+
+    // One of everything — no tag left over from the document we came from.
+    for (const values of [
+      meta.titles, meta.canonical, meta.robots, meta.description,
+      meta.ogTitle, meta.ogDescription, meta.ogUrl, meta.ogImage, meta.ogType,
+      meta.twitterTitle, meta.twitterDescription, meta.twitterImage,
+    ]) {
+      expect(values).toHaveLength(1);
+    }
+  });
+
+  test('closing a product opened from the list stays a SPA navigation', async ({ page }) => {
+    await page.goto('/shop/');
+    await expect(page.locator('.c-pcard').first()).toBeVisible();
+
+    await page.evaluate(() => {
+      (window as unknown as { __sameDocument?: boolean }).__sameDocument = true;
+    });
+
+    await page.locator('.c-pcard__btn').first().click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await page.getByRole('button', { name: '商品の詳細を閉じる' }).click();
+    await expect(page.getByRole('dialog')).toBeHidden();
+
+    // Back through history, as before: no reload, and none is wanted — this
+    // document was always `/shop/`'s own.
+    expect(
+      await page.evaluate(
+        () => (window as unknown as { __sameDocument?: boolean }).__sameDocument ?? false,
+      ),
+    ).toBe(true);
+    await expect(page).toHaveURL(/\/shop\/$/);
+  });
+
   /* ----------------------------------------------------- the static pages */
 
   const staticPages = [
