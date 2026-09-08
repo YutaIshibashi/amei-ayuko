@@ -122,7 +122,7 @@ $common = [
     'message'       => $message,
     'site_url'      => $siteUrl,
     'shop_url'      => $siteUrl . '/shop/',
-    'instagram_url' => $settings['instagram_url'] ?? 'https://www.instagram.com/amei_ayuko/',
+    'instagram_url' => $settings['instagram_url'] ?? 'https://www.instagram.com/ayuko_amei/',
     'copyright'     => $settings['copyright'] ?? '© amei ayuko',
 ];
 

@@ -212,7 +212,7 @@ INSERT INTO `site_settings` (`setting_key`, `setting_value`) VALUES
   ('ogp_image',                   '/brand/ogp-default.png'),
   ('ga4_measurement_id',          ''),
   ('search_console_verification', ''),
-  ('instagram_url',               'https://www.instagram.com/amei_ayuko/'),
+  ('instagram_url',               'https://www.instagram.com/ayuko_amei/'),
   ('minne_url',                   'https://minne.com/@amei-ayuko'),
   ('creema_url',                  'https://www.creema.jp/c/amei-ayuko'),
   ('mercari_url',                 'https://jp.mercari.com/user/profile/417108594'),
