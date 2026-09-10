@@ -18,7 +18,7 @@ async function scrollThrough(page: Page) {
   const total = await page.evaluate(() => document.body.scrollHeight);
   for (let y = 0; y < total; y += Math.round(height * 0.6)) {
     await page.evaluate((v) => window.scrollTo({ top: v, behavior: 'instant' }), y);
-    await page.waitForTimeout(120);
+    await page.waitForTimeout(200);
   }
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
   await page.waitForTimeout(1100); // the slide is 900ms
@@ -32,9 +32,20 @@ test.describe('Brand illustrations', () => {
   test('every edge illustration slides in and comes to rest on screen', async ({ page }) => {
     await page.goto('/');
     const decos = page.locator('.c-edgeDeco');
-    expect(await decos.count()).toBeGreaterThan(0);
+    const count = await decos.count();
+    expect(count).toBeGreaterThan(0);
 
-    await scrollThrough(page);
+    // Brought into view one at a time rather than scrolled past in steps:
+    // WebKit under a loaded CI machine does not always run an intersection
+    // check at every position a fast scroll passes through, and a missed
+    // check reads exactly like the illustration never arriving.
+    for (let i = 0; i < count; i++) {
+      const deco = decos.nth(i);
+      await deco.scrollIntoViewIfNeeded();
+      await expect.poll(() => deco.evaluate((n) => n.classList.contains('is-in'))).toBe(true);
+    }
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await page.waitForTimeout(1100); // the slide is 900ms
 
     const resting = await decos.evaluateAll((nodes) =>
       nodes.map((node) => {
