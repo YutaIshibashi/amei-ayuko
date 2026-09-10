@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { INSTAGRAM_URL } from '@/lib/site';
+import { EDGE_DECO, INSTAGRAM_URL } from '@/lib/site';
 import { track } from '@/lib/analytics';
 import { useSettings } from '@/lib/hooks';
+import EdgeDeco from '../EdgeDeco';
 import Reveal from '../Reveal';
 import { Blob, DottedArc, PillarIcon } from '../Deco';
 import { IconArrowRight, IconInstagram, IconMail } from '../Icons';
@@ -25,6 +26,7 @@ export default function DesignSection() {
 
   return (
     <section className="l-section l-section--creamDeep" aria-labelledby="design-title">
+      <EdgeDeco {...EDGE_DECO.girl} size={185} top="12%" />
       <Blob className="c-deco" style={{ bottom: '-14%', right: '-10%', color: 'var(--c-mint-soft)', opacity: 0.4 }} width={360} />
 
       <div className="l-page c-design">

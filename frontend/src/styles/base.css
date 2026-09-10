@@ -233,6 +233,51 @@ button { font: inherit; color: inherit; }
   .c-deco--float { animation: none; }
 }
 
+/* --- Character illustrations that slide in from a screen edge ---------- */
+/* See components/EdgeDeco.tsx. They sit behind `.l-page`, which carries its
+   own z-index, so they never cover text and never take a pointer event. */
+.c-edgeDeco {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+  width: var(--edge-size);
+  max-width: 30vw;
+}
+/* Resting position is flush with the edge the artwork was drawn for. The
+   wrapper stays there so it can be observed; the image is what slides. */
+.c-edgeDeco--left   { left: 0; }
+.c-edgeDeco--right  { right: 0; }
+.c-edgeDeco--bottom { bottom: 0; }
+
+.c-edgeDeco img {
+  display: block;
+  width: 100%;
+  height: auto;
+  opacity: 0;
+  transition: opacity var(--dur-slow) var(--ease-soft),
+              transform 900ms var(--ease-soft);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+/* Started clear of the edge; the section's own overflow does the hiding. */
+.c-edgeDeco--left img   { transform: translateX(-115%); }
+.c-edgeDeco--right img  { transform: translateX(115%); }
+.c-edgeDeco--bottom img { transform: translateY(115%); }
+.c-edgeDeco.is-in img   { opacity: 0.95; transform: none; }
+
+/* Narrow screens: the text column runs nearly edge to edge, so the artwork
+   steps back rather than competing with it. */
+@media (max-width: 767px) {
+  .c-edgeDeco { max-width: 22vw; }
+  .c-edgeDeco.is-in img { opacity: 0.7; }
+}
+
+.no-js .c-edgeDeco img { opacity: 0.95; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .c-edgeDeco img { opacity: 0.95; transform: none; transition: none; }
+}
+
 .l-section > .l-page { position: relative; z-index: 1; }
 
 /* --- Wave dividers ----------------------------------------------------- */

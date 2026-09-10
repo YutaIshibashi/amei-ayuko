@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { EDGE_DECO } from '@/lib/site';
+import EdgeDeco from '../EdgeDeco';
 import Reveal from '../Reveal';
 import { PillarIcon, WaveLine } from '../Deco';
 import { IconArrowRight } from '../Icons';
@@ -19,6 +21,8 @@ const PILLARS = [
 export default function Concept() {
   return (
     <section className="l-section l-section--cream" aria-labelledby="concept-title">
+      <EdgeDeco {...EDGE_DECO.rabbits} size={200} top="8%" />
+      <EdgeDeco {...EDGE_DECO.baby} size={150} left="7%" delay={120} />
       <div className="l-page">
         <Reveal className="c-secHead">
           <span className="c-secHead__en a-enTitle">Concept</span>
