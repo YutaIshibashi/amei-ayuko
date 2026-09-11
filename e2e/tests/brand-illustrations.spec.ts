@@ -231,6 +231,25 @@ test.describe('Opening animation', () => {
     ).toBe('hero-logo-roll');
   });
 
+  test.describe('with reduced motion', () => {
+    test('the hero mark is simply there, on a first visit', async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.goto('/');
+
+      // The overlay is hidden in CSS for these visitors, so it never animates
+      // and never reports that it finished. Anything that waits for that
+      // report waits for ever — which for the mark meant `opacity: 0` for the
+      // whole session, the one group who should get the page immediately.
+      await expect(page.locator('.c-intro')).toBeHidden();
+      await expect(page.locator('html')).toHaveAttribute('data-intro', 'skip');
+
+      const mark = page.locator('.c-hero__logo');
+      await expect(mark).toBeVisible();
+      expect(await mark.evaluate((el) => Number(getComputedStyle(el).opacity))).toBe(1);
+      expect(await mark.evaluate((el) => getComputedStyle(el).animationName)).toBe('none');
+    });
+  });
+
   test('coming back to the top page does not hide the hero mark', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('.c-intro')).toBeHidden({ timeout: 6000 });

@@ -78,7 +78,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .c-hero__logo { animation: none; }
+  /* The attribute selector above outranks a bare class, so the override has
+     to carry it: the mark must be visible here even if something upstream
+     decides the opening is still running. Withholding an entrance is one
+     thing; withholding the artwork is another. */
+  .c-hero__logo,
+  [data-intro='play'] .c-hero__logo { animation: none; opacity: 1; }
 }
 
 .c-hero__copy {
