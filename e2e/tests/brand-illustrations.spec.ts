@@ -202,6 +202,35 @@ test.describe('Opening animation', () => {
     }
   });
 
+  test('the hero mark is withheld while the curtain is up, then rolls in', async ({ page }) => {
+    await page.goto('/');
+
+    // While the opening is on screen the mark must carry no animation at all.
+    // Delaying it instead looks equivalent and is not: the attribute below
+    // flips at the very moment such a delay would be counting to, so the rule
+    // carrying it stops matching and the browser finds an animation whose
+    // time has already passed — the mark appears finished, having never
+    // moved. `animation: none` is what makes the start survive the hand-off.
+    await expect(page.locator('html')).toHaveAttribute('data-intro', 'play');
+    expect(
+      await page.locator('.c-hero__logo').evaluate((el) => ({
+        animation: getComputedStyle(el).animationName,
+        opacity: Number(getComputedStyle(el).opacity),
+      })),
+    ).toEqual({ animation: 'none', opacity: 0 });
+
+    await expect(page.locator('.c-intro')).toBeHidden({ timeout: 6000 });
+    await expect(page.locator('html')).toHaveAttribute('data-intro', 'skip');
+
+    // And now it is a real entrance, ending where the layout put it.
+    await expect
+      .poll(() => page.locator('.c-hero__logo').evaluate((el) => Number(getComputedStyle(el).opacity)))
+      .toBeGreaterThan(0.9);
+    expect(
+      await page.locator('.c-hero__logo').evaluate((el) => getComputedStyle(el).animationName),
+    ).toBe('hero-logo-roll');
+  });
+
   test('coming back to the top page does not hide the hero mark', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('.c-intro')).toBeHidden({ timeout: 6000 });
