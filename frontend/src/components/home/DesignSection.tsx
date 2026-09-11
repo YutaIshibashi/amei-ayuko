@@ -75,10 +75,10 @@ export default function DesignSection() {
         <Reveal delay={140} className="c-design__visual">
           <div className="a-ratio a-ratio--1x1" style={{ borderRadius: 'var(--r-blob)', boxShadow: 'var(--shadow-md)' }}>
             <img
-              src="/brand/design-works.svg"
+              src="/brand/design-works.jpg"
               alt="ロゴ・名刺・チラシのデザイン制作イメージ"
-              width={640}
-              height={640}
+              width={900}
+              height={900}
               loading="lazy"
               decoding="async"
             />
