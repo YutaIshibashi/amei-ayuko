@@ -35,6 +35,13 @@ test.describe('Brand illustrations', () => {
   test(`every edge illustration on ${path} slides in and comes to rest on screen`, async ({ page }) => {
     await page.goto(path);
     const decos = page.locator('.c-edgeDeco');
+
+    // Waited for, not counted straight away: /shop/ and /news/ draw their
+    // sections client-side, so for a moment after navigation the page is a
+    // Suspense fallback with no illustrations in it at all. Counting then
+    // reads as "this page has none", which is how this passed on a fast
+    // machine and failed in CI.
+    await expect(decos.first()).toBeAttached();
     const count = await decos.count();
     expect(count).toBeGreaterThan(0);
 
