@@ -30,18 +30,35 @@ const BOOT_SCRIPT = `
 (function () {
   var root = document.documentElement;
   root.classList.remove('no-js');
+
+  // 'play' while the opening is on screen, 'skip' once it is not — including
+  // before it ever starts. Two things read it: the overlay itself, and the
+  // hero mark, which holds its entrance back until the overlay has gone.
+  //
+  // The hand-off is the overlay's own animationend rather than a timer, so
+  // there is no second copy of the timeline to keep in step with the CSS. It
+  // is a state that ends, not the permanent absence of an attribute: a
+  // visitor who leaves '/' and comes back through the client-side router
+  // re-mounts the hero, and the mark must not wait on an opening that is long
+  // over and will not replay.
+  document.addEventListener('animationend', function (e) {
+    if (e.animationName === 'intro-lift') root.setAttribute('data-intro', 'skip');
+  });
+
   try {
     var KEY = 'amei.intro.v1';
     var path = location.pathname;
     var isHome = path === '/' || path === '/index.html';
     if (isHome && !sessionStorage.getItem(KEY)) {
       sessionStorage.setItem(KEY, '1');
+      root.setAttribute('data-intro', 'play');
     } else {
       root.setAttribute('data-intro', 'skip');
     }
   } catch (e) {
     // Storage disabled (private mode, blocked cookies): show it and move on.
     // Playing once per load is a better failure than never playing at all.
+    root.setAttribute('data-intro', 'play');
   }
 })();
 `.trim();

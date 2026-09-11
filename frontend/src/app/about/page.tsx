@@ -4,7 +4,8 @@ import JsonLd from '@/components/JsonLd';
 import Reveal from '@/components/Reveal';
 import { Blob, Cloud, Flower, PillarIcon, Sparkle, WaveLine } from '@/components/Deco';
 import { IconArrowRight, IconInstagram, IconShop } from '@/components/Icons';
-import { ASSETS, INSTAGRAM_URL, SITE } from '@/lib/site';
+import { ASSETS, EDGE_DECO, INSTAGRAM_URL, SITE } from '@/lib/site';
+import EdgeDeco from '@/components/EdgeDeco';
 
 const title = 'amei ayuko について';
 const description =
@@ -97,6 +98,7 @@ export default function AboutPage() {
       </section>
 
       <section className="l-section l-section--paper" aria-labelledby="story-title">
+        <EdgeDeco {...EDGE_DECO.rabbits} size={175} top="10%" />
         <Sparkle className="c-deco c-deco--float" style={{ top: '10%', left: '7%', color: 'var(--c-sun)' }} width={28} />
         <div className="l-page l-prose">
           <Reveal className="c-secHead">
@@ -119,6 +121,7 @@ export default function AboutPage() {
       </section>
 
       <section className="l-section l-section--mint" aria-labelledby="process-title">
+        <EdgeDeco {...EDGE_DECO.rabbitGirl} size={175} bottom="8%" />
         <div className="l-page">
           <Reveal className="c-secHead">
             <span className="c-secHead__en a-enTitle">Process</span>
@@ -139,6 +142,7 @@ export default function AboutPage() {
       </section>
 
       <section className="l-section l-section--paper" aria-labelledby="workspace-title">
+        <EdgeDeco {...EDGE_DECO.bearBoy} size={170} top="14%" />
         <Flower className="c-deco c-deco--float" style={{ bottom: '8%', right: '6%', color: 'var(--c-brand-soft)' }} width={72} />
         <div className="l-page">
           <Reveal className="c-secHead">
@@ -160,6 +164,7 @@ export default function AboutPage() {
       </section>
 
       <section className="l-section l-section--cream" aria-labelledby="profile-title">
+        <EdgeDeco {...EDGE_DECO.girl} size={170} top="12%" />
         <div className="l-page l-prose">
           <Reveal className="c-secHead">
             <span className="c-secHead__en a-enTitle">Profile</span>

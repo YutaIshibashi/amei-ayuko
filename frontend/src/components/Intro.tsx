@@ -1,4 +1,4 @@
-import { ASSETS, SITE } from '@/lib/site';
+import { SITE } from '@/lib/site';
 
 /**
  * Opening animation.
@@ -32,23 +32,33 @@ import { ASSETS, SITE } from '@/lib/site';
 export default function Intro() {
   return (
     <div className="c-intro" aria-hidden="true" inert>
-      {/* Spread across the viewport rather than around the wordmark, so the
+      {/* Spread across the viewport rather than around the mark, so the
           composition does not clump in the middle of a wide screen. */}
       <span className="c-intro__dot c-intro__dot--1" />
       <span className="c-intro__dot c-intro__dot--2" />
       <span className="c-intro__dot c-intro__dot--3" />
       <span className="c-intro__dot c-intro__dot--4" />
 
+      {/*
+        The mark and the three drawings are CSS backgrounds, not <img>. This
+        element is rendered on every page — it lives in the root layout so
+        that returning to '/' through the router cannot replay it — and on the
+        pages that skip the opening it is `display: none`. A background in a
+        `display: none` subtree is never requested; four <img> elements in one
+        are, and would have cost every one of those pages ~130 KB of pictures
+        it will not draw, with the mark competing for priority against the
+        content the visitor actually came for.
+
+        Nothing is lost by the swap: all four are decorative, and the whole
+        overlay is already `aria-hidden` and `inert`.
+      */}
+      <span className="c-intro__friend c-intro__friend--left" />
+      <span className="c-intro__friend c-intro__friend--right" />
+      <span className="c-intro__friend c-intro__friend--baby" />
+
       <div className="c-intro__inner">
-        {/* Same file as the hero logo, so this costs no extra request. */}
-        <img
-          className="c-intro__logo"
-          src={ASSETS.logo}
-          alt=""
-          width={280}
-          height={70}
-          fetchPriority="high"
-        />
+        {/* Same file as the hero mark, so on '/' this costs no extra request. */}
+        <span className="c-intro__logo" />
 
         {/*
           The hand-drawn underline, drawn on rather than faded in.

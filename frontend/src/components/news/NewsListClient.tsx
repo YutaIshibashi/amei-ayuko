@@ -5,9 +5,10 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { fetchNewsList } from '@/lib/api';
 import { formatDate, toIsoJst } from '@/lib/format';
-import { newsCategoryLabel, NEWS_PER_PAGE } from '@/lib/site';
+import { EDGE_DECO, NEWS_PER_PAGE, newsCategoryLabel } from '@/lib/site';
 import type { NewsListResponse } from '@/lib/types';
 import Pagination from './Pagination';
+import EdgeDeco from '../EdgeDeco';
 
 /**
  * News index.
@@ -43,6 +44,7 @@ export default function NewsListClient() {
 
   return (
     <section className="l-section l-section--paper" style={{ paddingTop: 'var(--s-5)' }}>
+      <EdgeDeco {...EDGE_DECO.bear} size={120} top="7%" />
       <div className="l-page">
         <div className="c-pageHead">
           <span className="c-pageHead__en">News</span>

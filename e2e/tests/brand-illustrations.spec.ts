@@ -29,8 +29,11 @@ test.describe('Brand illustrations', () => {
     await mockApi(page);
   });
 
-  test('every edge illustration slides in and comes to rest on screen', async ({ page }) => {
-    await page.goto('/');
+  const stamped = ['/', '/about/', '/shop/', '/news/', '/contact/', '/privacy-policy/'];
+
+  for (const path of stamped) {
+  test(`every edge illustration on ${path} slides in and comes to rest on screen`, async ({ page }) => {
+    await page.goto(path);
     const decos = page.locator('.c-edgeDeco');
     const count = await decos.count();
     expect(count).toBeGreaterThan(0);
@@ -75,6 +78,7 @@ test.describe('Brand illustrations', () => {
       expect(deco.left).toBeLessThan(pageWidth);
     }
   });
+  }
 
   test('they do not push the page sideways', async ({ page }) => {
     await page.goto('/');
@@ -133,5 +137,93 @@ test.describe('Brand illustrations', () => {
       // up stretched once CSS sizes only one axis.
       expect(image.attrRatio).toBeCloseTo(image.naturalRatio, 1);
     }
+  });
+});
+
+/**
+ * The opening animation.
+ *
+ * It is one CSS animation with no JavaScript in the loop, ending in
+ * `visibility: hidden` — so the thing that can go wrong when its timeline is
+ * lengthened is that some part of it outlives the overlay, or the overlay
+ * outstays the timeline and sits over a page nobody can click.
+ */
+test.describe('Opening animation', () => {
+  // A fresh context has an empty sessionStorage, so the opening plays.
+  test('rolls the round mark in, brings the three drawings with it, and leaves', async ({ page }) => {
+    await page.goto('/');
+
+    const intro = page.locator('.c-intro');
+    await expect(intro).toBeVisible();
+
+    // The mark it is built around, and the company it keeps. They are CSS
+    // backgrounds so that the pages which skip the opening never fetch them.
+    await expect(page.locator('.c-intro__friend')).toHaveCount(3);
+    expect(
+      await page.locator('.c-intro__logo').evaluate((n) => getComputedStyle(n).backgroundImage),
+    ).toContain('logo-top.png');
+
+    // Nothing may spill sideways while the mark is still travelling.
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+      ),
+    ).toBe(false);
+
+    // And it has to take itself away, or the page underneath is unusable.
+    await expect(intro).toBeHidden({ timeout: 6000 });
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  });
+
+  test('the hero mark is the same file, so it costs no second request', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.c-intro')).toBeHidden({ timeout: 6000 });
+
+    await expect(page.locator('.c-hero__logo')).toHaveAttribute('src', /logo-top\.png$/);
+  });
+
+  test('a page that skips the opening does not download it', async ({ page }) => {
+    const fetched: string[] = [];
+    page.on('response', (r) => {
+      const name = r.url().split('/').pop() ?? '';
+      if (name.endsWith('.png')) fetched.push(name);
+    });
+
+    await page.goto('/privacy-policy/');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await page.waitForLoadState('networkidle');
+
+    // The overlay is in the markup of every page — it has to be, or returning
+    // to '/' through the router would replay it — so what must not happen is
+    // it being downloaded where it will never be drawn.
+    await expect(page.locator('.c-intro')).toBeHidden();
+    for (const name of ['logo-top.png', 'deco-left-bear-boy.png', 'deco-right-rabbit-girl.png']) {
+      expect(fetched).not.toContain(name);
+    }
+  });
+
+  test('coming back to the top page does not hide the hero mark', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.c-intro')).toBeHidden({ timeout: 6000 });
+
+    // The opening is over and will not replay, so the mark it waited for must
+    // not keep waiting: the delay is keyed on the opening being on screen, and
+    // it is not.
+    // The hero's own link, not the menu's: the menu is behind a hamburger at
+    // phone widths, and this has to be a client-side navigation either way.
+    await page.getByRole('link', { name: /amei ayukoについて/ }).first().click();
+    await page.waitForURL('**/about/');
+    await page.goBack();
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+
+    // Well inside the 2260ms the mark used to wait, and well outside the
+    // ~340ms its own entrance takes: the window is what makes this a test of
+    // the delay rather than of the animation.
+    await expect
+      .poll(
+        () => page.locator('.c-hero__logo').evaluate((el) => Number(getComputedStyle(el).opacity)),
+        { timeout: 1500 },
+      )
+      .toBeGreaterThan(0.9);
   });
 });
