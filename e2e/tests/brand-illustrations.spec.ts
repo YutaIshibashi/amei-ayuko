@@ -264,9 +264,9 @@ test.describe('Opening animation', () => {
     await page.goBack();
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
-    // Well inside the 2260ms the mark used to wait, and well outside the
-    // ~340ms its own entrance takes: the window is what makes this a test of
-    // the delay rather than of the animation.
+    // Comfortably outside the ~340ms the entrance itself takes, and far inside
+    // the length of an opening: if the mark were waiting on one — it is not
+    // replaying, so it would wait for ever — it would still be at zero here.
     await expect
       .poll(
         () => page.locator('.c-hero__logo').evaluate((el) => Number(getComputedStyle(el).opacity)),
