@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { CATEGORIES } from '@/lib/site';
+import { CATEGORIES, EDGE_DECO } from '@/lib/site';
 import { track } from '@/lib/analytics';
+import EdgeDeco from '../EdgeDeco';
 import Reveal from '../Reveal';
 import { Flower, Sparkle } from '../Deco';
 import { IconArrowRight } from '../Icons';
@@ -21,6 +22,7 @@ const CARD_ART = {
 export default function CategoryCards() {
   return (
     <section className="l-section l-section--paper" aria-labelledby="category-title">
+      <EdgeDeco {...EDGE_DECO.rabbitGirl} size={195} bottom="6%" />
       <Sparkle className="c-deco c-deco--float" style={{ top: '8%', right: '8%', color: 'var(--c-sun)' }} width={30} />
 
       <div className="l-page">

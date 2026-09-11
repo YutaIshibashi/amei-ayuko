@@ -1,8 +1,9 @@
 'use client';
 
-import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from '@/lib/site';
+import { EDGE_DECO, INSTAGRAM_HANDLE, INSTAGRAM_URL } from '@/lib/site';
 import { track } from '@/lib/analytics';
 import { useSettings } from '@/lib/hooks';
+import EdgeDeco from '../EdgeDeco';
 import Reveal from '../Reveal';
 import { Heart, Sparkle } from '../Deco';
 import { IconExternal, IconInstagram } from '../Icons';
@@ -20,6 +21,8 @@ export default function InstagramCta() {
 
   return (
     <section className="l-section l-section--berry" aria-labelledby="instagram-title">
+      <EdgeDeco {...EDGE_DECO.bearBlack} size={125} top="16%" />
+      <EdgeDeco {...EDGE_DECO.rabbit} size={125} bottom="14%" delay={140} />
       <div className="l-page">
         <Reveal className="c-insta">
           <Sparkle className="c-deco c-deco--float" style={{ top: '12%', left: '10%', color: 'var(--c-sun)' }} width={26} />

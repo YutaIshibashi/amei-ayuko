@@ -4,8 +4,9 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { fetchNewsList } from '@/lib/api';
 import { formatDate, toIsoJst } from '@/lib/format';
-import { TOP_NEWS_COUNT } from '@/lib/site';
+import { EDGE_DECO, TOP_NEWS_COUNT } from '@/lib/site';
 import type { NewsItem } from '@/lib/types';
+import EdgeDeco from '../EdgeDeco';
 import Reveal from '../Reveal';
 import { IconArrowRight } from '../Icons';
 
@@ -32,6 +33,7 @@ export default function NewsTeaser() {
 
   return (
     <section className="l-section l-section--mint" aria-labelledby="news-title">
+      <EdgeDeco {...EDGE_DECO.bearBoy} size={190} top="14%" />
       <div className="l-page">
         <Reveal className="c-secHead">
           <span className="c-secHead__en a-enTitle">News</span>

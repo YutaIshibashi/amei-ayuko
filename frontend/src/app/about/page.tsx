@@ -77,7 +77,7 @@ export default function AboutPage() {
 
           <Reveal className="c-aboutTeaser" style={{ marginTop: 'var(--s-6)' }}>
             <div className="c-aboutTeaser__avatar">
-              <img src={ASSETS.avatar} alt="amei ayuko の似顔絵イラスト" width={440} height={440} decoding="async" />
+              <img src={ASSETS.avatar} alt="amei ayuko のプロフィールアイコン" width={440} height={440} decoding="async" />
             </div>
             <div>
               <p className="c-aboutTeaser__name">amei ayuko</p>

@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { ASSETS } from '@/lib/site';
+import { ASSETS, EDGE_DECO } from '@/lib/site';
 import { useSettings } from '@/lib/hooks';
+import EdgeDeco from '../EdgeDeco';
 import Reveal from '../Reveal';
 import { WaveLine } from '../Deco';
 import { IconArrowRight } from '../Icons';
@@ -18,11 +19,12 @@ export default function AboutTeaser() {
 
   return (
     <section className="l-section l-section--paper" aria-labelledby="about-teaser-title">
+      <EdgeDeco {...EDGE_DECO.bear} size={135} top="10%" />
       <div className="l-page c-aboutTeaser">
         <Reveal className="c-aboutTeaser__avatar">
           <img
             src={ASSETS.avatar}
-            alt="amei ayuko の似顔絵イラスト"
+            alt="amei ayuko のプロフィールアイコン"
             width={440}
             height={440}
             loading="lazy"

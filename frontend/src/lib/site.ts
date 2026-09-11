@@ -89,10 +89,30 @@ export const TOP_NEWS_COUNT = 5;
 /** Placeholder assets. Replace the files in /public/brand — not these paths. */
 export const ASSETS = {
   logo: '/brand/logo.svg',
+  /** The header's own mark, top left of every page. */
+  headerIcon: '/brand/logo-ayuko.png',
   logoMark: '/brand/logo-mark.svg',
   ogpDefault: '/brand/ogp-default.png',
   heroFallback: '/brand/hero-placeholder.svg',
-  avatar: '/brand/avatar.svg',
+  avatar: '/brand/profile-ayuko.png',
+} as const;
+
+/**
+ * The character illustrations that slide in from the screen edges.
+ *
+ * `from` is part of the artwork, not a layout choice: each one is drawn
+ * peeking around the edge it names, so it only reads correctly sliding in
+ * from that side. Sizes are the intrinsic ones, for reserving the box.
+ */
+export const EDGE_DECO = {
+  rabbits:    { src: '/brand/deco-left-rabbits.png',       width: 472, height: 709, from: 'left' },
+  bearBoy:    { src: '/brand/deco-left-bear-boy.png',      width: 472, height: 709, from: 'left' },
+  bearBlack:  { src: '/brand/deco-left-bear-black.png',    width: 354, height: 354, from: 'left' },
+  rabbitGirl: { src: '/brand/deco-right-rabbit-girl.png',  width: 472, height: 709, from: 'right' },
+  girl:       { src: '/brand/deco-right-girl.png',         width: 472, height: 709, from: 'right' },
+  rabbit:     { src: '/brand/deco-right-rabbit.png',       width: 354, height: 354, from: 'right' },
+  bear:       { src: '/brand/deco-right-bear.png',         width: 354, height: 354, from: 'right' },
+  baby:       { src: '/brand/deco-baby.png',               width: 472, height: 472, from: 'bottom' },
 } as const;
 
 /** Path the sync pipeline writes product JSON to (served as a static file). */

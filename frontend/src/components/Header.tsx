@@ -48,8 +48,9 @@ export default function Header() {
       <header className={headerClass}>
         <div className="c-header__inner">
           <Link href="/" className="c-header__logo" aria-label={`${SITE.name} ホームへ`}>
-            {/* Explicit dimensions: the logo must never cause a layout shift. */}
-            <img src={ASSETS.logo} alt={SITE.name} width={168} height={42} />
+            {/* Intrinsic dimensions: CSS sets the height, and the real ratio
+                is what keeps the mark from being squashed or shifting. */}
+            <img src={ASSETS.headerIcon} alt={SITE.name} width={517} height={168} />
           </Link>
 
           <nav className="c-header__nav" aria-label="メインメニュー">
