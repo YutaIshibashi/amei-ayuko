@@ -55,8 +55,12 @@
 }
 
 /* On a first visit the opening animation is covering all of this, so the
-   bloom waits for the overlay to lift instead of playing behind it. */
-html:not([data-intro='skip']) .c-hero__logo { animation-delay: 2260ms; }
+   bloom waits for the overlay to lift instead of playing behind it. Keyed on
+   the opening being on screen — a positive state the boot script clears when
+   the overlay finishes — rather than on `data-intro` merely being absent,
+   which stays true for the rest of the session and would hold the mark at
+   `opacity: 0` every time the router brought the visitor back to '/'. */
+[data-intro='play'] .c-hero__logo { animation-delay: 2260ms; }
 
 @media (prefers-reduced-motion: reduce) {
   .c-hero__logo { animation: none; }

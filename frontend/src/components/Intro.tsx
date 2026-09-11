@@ -1,4 +1,4 @@
-import { ASSETS, EDGE_DECO, SITE } from '@/lib/site';
+import { SITE } from '@/lib/site';
 
 /**
  * Opening animation.
@@ -39,40 +39,26 @@ export default function Intro() {
       <span className="c-intro__dot c-intro__dot--3" />
       <span className="c-intro__dot c-intro__dot--4" />
 
-      {/* The same three drawings the page itself uses, arriving from the same
-          edges they were drawn to peek around. */}
-      <img
-        className="c-intro__friend c-intro__friend--left"
-        src={EDGE_DECO.bearBoy.src}
-        alt=""
-        width={EDGE_DECO.bearBoy.width}
-        height={EDGE_DECO.bearBoy.height}
-      />
-      <img
-        className="c-intro__friend c-intro__friend--right"
-        src={EDGE_DECO.rabbitGirl.src}
-        alt=""
-        width={EDGE_DECO.rabbitGirl.width}
-        height={EDGE_DECO.rabbitGirl.height}
-      />
-      <img
-        className="c-intro__friend c-intro__friend--baby"
-        src={EDGE_DECO.baby.src}
-        alt=""
-        width={EDGE_DECO.baby.width}
-        height={EDGE_DECO.baby.height}
-      />
+      {/*
+        The mark and the three drawings are CSS backgrounds, not <img>. This
+        element is rendered on every page — it lives in the root layout so
+        that returning to '/' through the router cannot replay it — and on the
+        pages that skip the opening it is `display: none`. A background in a
+        `display: none` subtree is never requested; four <img> elements in one
+        are, and would have cost every one of those pages ~130 KB of pictures
+        it will not draw, with the mark competing for priority against the
+        content the visitor actually came for.
+
+        Nothing is lost by the swap: all four are decorative, and the whole
+        overlay is already `aria-hidden` and `inert`.
+      */}
+      <span className="c-intro__friend c-intro__friend--left" />
+      <span className="c-intro__friend c-intro__friend--right" />
+      <span className="c-intro__friend c-intro__friend--baby" />
 
       <div className="c-intro__inner">
-        {/* Same file as the hero mark, so this costs no extra request. */}
-        <img
-          className="c-intro__logo"
-          src={ASSETS.topIcon}
-          alt=""
-          width={640}
-          height={640}
-          fetchPriority="high"
-        />
+        {/* Same file as the hero mark, so on '/' this costs no extra request. */}
+        <span className="c-intro__logo" />
 
         {/*
           The hand-drawn underline, drawn on rather than faded in.

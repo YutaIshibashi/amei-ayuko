@@ -59,8 +59,10 @@
    as rolling rather than spinning on the spot.
    ------------------------------------------------------------------------ */
 .c-intro__logo {
+  display: block;
   width: min(200px, 44vw);
-  height: auto;
+  aspect-ratio: 1 / 1;
+  background: url('/brand/logo-top.png') center / contain no-repeat;
   opacity: 0;
   transform: translateX(64vw) rotate(720deg);
   animation: intro-roll 1150ms cubic-bezier(0.22, 0.66, 0.28, 1) 80ms forwards;
@@ -78,7 +80,10 @@
    -------------------------------------------------------------------------- */
 .c-intro__friend {
   position: absolute;
-  height: auto;
+  display: block;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
   opacity: 0;
   pointer-events: none;
   user-select: none;
@@ -88,6 +93,8 @@
   left: 0;
   top: 50%;
   width: min(190px, 26vw);
+  aspect-ratio: 472 / 709;
+  background-image: url('/brand/deco-left-bear-boy.png');
   transform: translate(-115%, -50%);
   animation: intro-inLeft 550ms var(--ease-soft) 700ms forwards;
 }
@@ -95,6 +102,8 @@
   right: 0;
   top: 50%;
   width: min(190px, 26vw);
+  aspect-ratio: 472 / 709;
+  background-image: url('/brand/deco-right-rabbit-girl.png');
   transform: translate(115%, -50%);
   animation: intro-inRight 550ms var(--ease-soft) 780ms forwards;
 }
@@ -103,6 +112,8 @@
   left: 30%;
   bottom: 0;
   width: min(140px, 24vw);
+  aspect-ratio: 1 / 1;
+  background-image: url('/brand/deco-baby.png');
   transform: translateY(115%);
   animation: intro-inBaby 500ms var(--ease-pop) 950ms forwards;
 }

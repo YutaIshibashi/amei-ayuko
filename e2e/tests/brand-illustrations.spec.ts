@@ -156,9 +156,12 @@ test.describe('Opening animation', () => {
     const intro = page.locator('.c-intro');
     await expect(intro).toBeVisible();
 
-    // The mark it is built around, and the company it keeps.
-    await expect(page.locator('.c-intro__logo')).toHaveAttribute('src', /logo-top\.png$/);
+    // The mark it is built around, and the company it keeps. They are CSS
+    // backgrounds so that the pages which skip the opening never fetch them.
     await expect(page.locator('.c-intro__friend')).toHaveCount(3);
+    expect(
+      await page.locator('.c-intro__logo').evaluate((n) => getComputedStyle(n).backgroundImage),
+    ).toContain('logo-top.png');
 
     // Nothing may spill sideways while the mark is still travelling.
     expect(
@@ -177,5 +180,50 @@ test.describe('Opening animation', () => {
     await expect(page.locator('.c-intro')).toBeHidden({ timeout: 6000 });
 
     await expect(page.locator('.c-hero__logo')).toHaveAttribute('src', /logo-top\.png$/);
+  });
+
+  test('a page that skips the opening does not download it', async ({ page }) => {
+    const fetched: string[] = [];
+    page.on('response', (r) => {
+      const name = r.url().split('/').pop() ?? '';
+      if (name.endsWith('.png')) fetched.push(name);
+    });
+
+    await page.goto('/privacy-policy/');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await page.waitForLoadState('networkidle');
+
+    // The overlay is in the markup of every page — it has to be, or returning
+    // to '/' through the router would replay it — so what must not happen is
+    // it being downloaded where it will never be drawn.
+    await expect(page.locator('.c-intro')).toBeHidden();
+    for (const name of ['logo-top.png', 'deco-left-bear-boy.png', 'deco-right-rabbit-girl.png']) {
+      expect(fetched).not.toContain(name);
+    }
+  });
+
+  test('coming back to the top page does not hide the hero mark', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.c-intro')).toBeHidden({ timeout: 6000 });
+
+    // The opening is over and will not replay, so the mark it waited for must
+    // not keep waiting: the delay is keyed on the opening being on screen, and
+    // it is not.
+    // The hero's own link, not the menu's: the menu is behind a hamburger at
+    // phone widths, and this has to be a client-side navigation either way.
+    await page.getByRole('link', { name: /amei ayukoについて/ }).first().click();
+    await page.waitForURL('**/about/');
+    await page.goBack();
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+
+    // Well inside the 2260ms the mark used to wait, and well outside the
+    // ~340ms its own entrance takes: the window is what makes this a test of
+    // the delay rather than of the animation.
+    await expect
+      .poll(
+        () => page.locator('.c-hero__logo').evaluate((el) => Number(getComputedStyle(el).opacity)),
+        { timeout: 1500 },
+      )
+      .toBeGreaterThan(0.9);
   });
 });
