@@ -89,8 +89,10 @@ export const TOP_NEWS_COUNT = 5;
 /** Placeholder assets. Replace the files in /public/brand — not these paths. */
 export const ASSETS = {
   logo: '/brand/logo.svg',
-  /** The header's own mark, top left of every page. */
+  /** The header's own mark, top left of every page — and the footer's. */
   headerIcon: '/brand/logo-ayuko.png',
+  /** The round mark the hero and the opening animation are built around. */
+  topIcon: '/brand/logo-top.png',
   logoMark: '/brand/logo-mark.svg',
   ogpDefault: '/brand/ogp-default.png',
   heroFallback: '/brand/hero-placeholder.svg',

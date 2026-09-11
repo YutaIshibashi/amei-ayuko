@@ -5,12 +5,17 @@
    it — the final keyframe sets `visibility: hidden` with `forwards`, so the
    overlay stops covering and stops hit-testing even if the bundle never runs.
 
-   Total timeline: 1350ms.
-     0 –  520ms  the hand-drawn mark strokes itself in
-   180 –  760ms  the logo lifts into place
-   420 –  900ms  the concept copy follows
-   340 –  820ms  three dots pop
-   950 – 1350ms  the whole overlay lifts away
+   Total timeline: 2250ms — longer than it was, because the mark now travels
+   across the screen rather than lifting in place, and the three drawings have
+   to arrive before the copy reads as settled.
+      80 – 1230ms  the round mark rolls in from the right and comes to rest
+     700 – 1250ms  the boy and his bear arrive from the left
+     780 – 1330ms  the girl and her rabbit arrive from the right
+     950 – 1450ms  the baby rises at the foot of the screen
+     900 – 1510ms  the hand-drawn rule strokes itself in
+    1000 – 1520ms  four dots pop
+    1250 – 1730ms  the concept copy follows
+    1850 – 2250ms  the whole overlay lifts away
    ========================================================================= */
 
 .c-intro {
@@ -24,7 +29,10 @@
   background:
     radial-gradient(80% 60% at 50% 38%, rgba(255, 253, 250, 0.95), transparent 70%),
     linear-gradient(168deg, var(--c-cream) 0%, var(--c-cream-deep) 100%);
-  animation: intro-lift 400ms var(--ease-soft) 950ms forwards;
+  /* The mark starts off the right-hand edge; without this it would widen the
+     document and put a scrollbar on the page for the length of the opening. */
+  overflow: hidden;
+  animation: intro-lift 400ms var(--ease-soft) 1850ms forwards;
 }
 
 /* `visibility` interpolates discretely, so the 99% stop makes the hand-off
@@ -45,14 +53,63 @@
   text-align: center;
 }
 
-/* --- wordmark ----------------------------------------------------------- */
+/* --- the round mark ------------------------------------------------------
+   It rolls: the angle decreases as it travels left, which is the direction a
+   wheel actually turns going that way. Two full turns over the distance reads
+   as rolling rather than spinning on the spot.
+   ------------------------------------------------------------------------ */
 .c-intro__logo {
-  width: min(280px, 62vw);
+  width: min(200px, 44vw);
   height: auto;
   opacity: 0;
-  transform: translateY(14px);
-  animation: intro-rise 560ms var(--ease-pop) 60ms forwards;
+  transform: translateX(64vw) rotate(720deg);
+  animation: intro-roll 1150ms cubic-bezier(0.22, 0.66, 0.28, 1) 80ms forwards;
 }
+
+@keyframes intro-roll {
+  0%   { opacity: 0; transform: translateX(64vw) rotate(720deg); }
+  10%  { opacity: 1; }
+  100% { opacity: 1; transform: translateX(0) rotate(0deg); }
+}
+
+/* --- the three drawings ---------------------------------------------------
+   Placed against the overlay, each entering from the edge its artwork was
+   drawn to peek around — the same pairing EDGE_DECO records for the page.
+   -------------------------------------------------------------------------- */
+.c-intro__friend {
+  position: absolute;
+  height: auto;
+  opacity: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+.c-intro__friend--left {
+  left: 0;
+  top: 50%;
+  width: min(190px, 26vw);
+  transform: translate(-115%, -50%);
+  animation: intro-inLeft 550ms var(--ease-soft) 700ms forwards;
+}
+.c-intro__friend--right {
+  right: 0;
+  top: 50%;
+  width: min(190px, 26vw);
+  transform: translate(115%, -50%);
+  animation: intro-inRight 550ms var(--ease-soft) 780ms forwards;
+}
+/* Centre-ish but off to the left, peeking up over the bottom edge. */
+.c-intro__friend--baby {
+  left: 30%;
+  bottom: 0;
+  width: min(140px, 24vw);
+  transform: translateY(115%);
+  animation: intro-inBaby 500ms var(--ease-pop) 950ms forwards;
+}
+
+@keyframes intro-inLeft  { to { opacity: 0.95; transform: translate(0, -50%); } }
+@keyframes intro-inRight { to { opacity: 0.95; transform: translate(0, -50%); } }
+@keyframes intro-inBaby  { to { opacity: 0.95; transform: translateY(0); } }
 
 /* --- hand-drawn underline ----------------------------------------------- */
 .c-intro__rule { width: min(200px, 48vw); height: auto; overflow: visible; }
@@ -64,8 +121,8 @@
   stroke-dashoffset: 1;
   animation: intro-draw 460ms var(--ease-soft) forwards;
 }
-.c-intro__stroke--1 { animation-delay: 320ms; }
-.c-intro__stroke--2 { animation-delay: 470ms; }
+.c-intro__stroke--1 { animation-delay: 900ms; }
+.c-intro__stroke--2 { animation-delay: 1050ms; }
 
 @keyframes intro-draw {
   to { stroke-dashoffset: 0; }
@@ -85,7 +142,7 @@
   color: var(--c-ink-soft);
   opacity: 0;
   transform: translateY(10px);
-  animation: intro-rise 480ms var(--ease-soft) 520ms forwards;
+  animation: intro-rise 480ms var(--ease-soft) 1250ms forwards;
 }
 
 @media (min-width: 768px) {
@@ -111,25 +168,25 @@
   top: 22%; left: 18%;
   width: 14px; height: 14px;
   background: var(--c-sun);
-  animation-delay: 420ms;
+  animation-delay: 1000ms;
 }
 .c-intro__dot--2 {
   top: 30%; right: 20%;
   width: 10px; height: 10px;
   background: var(--c-berry);
-  animation-delay: 540ms;
+  animation-delay: 1120ms;
 }
 .c-intro__dot--3 {
   bottom: 26%; left: 26%;
   width: 9px; height: 9px;
   background: var(--c-mint);
-  animation-delay: 640ms;
+  animation-delay: 1220ms;
 }
 .c-intro__dot--4 {
   bottom: 22%; right: 24%;
   width: 12px; height: 12px;
   background: var(--c-brand-soft);
-  animation-delay: 720ms;
+  animation-delay: 1300ms;
 }
 
 @keyframes intro-pop {

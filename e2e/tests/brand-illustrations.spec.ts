@@ -29,8 +29,11 @@ test.describe('Brand illustrations', () => {
     await mockApi(page);
   });
 
-  test('every edge illustration slides in and comes to rest on screen', async ({ page }) => {
-    await page.goto('/');
+  const stamped = ['/', '/about/', '/shop/', '/news/', '/contact/', '/privacy-policy/'];
+
+  for (const path of stamped) {
+  test(`every edge illustration on ${path} slides in and comes to rest on screen`, async ({ page }) => {
+    await page.goto(path);
     const decos = page.locator('.c-edgeDeco');
     const count = await decos.count();
     expect(count).toBeGreaterThan(0);
@@ -75,6 +78,7 @@ test.describe('Brand illustrations', () => {
       expect(deco.left).toBeLessThan(pageWidth);
     }
   });
+  }
 
   test('they do not push the page sideways', async ({ page }) => {
     await page.goto('/');
@@ -133,5 +137,45 @@ test.describe('Brand illustrations', () => {
       // up stretched once CSS sizes only one axis.
       expect(image.attrRatio).toBeCloseTo(image.naturalRatio, 1);
     }
+  });
+});
+
+/**
+ * The opening animation.
+ *
+ * It is one CSS animation with no JavaScript in the loop, ending in
+ * `visibility: hidden` — so the thing that can go wrong when its timeline is
+ * lengthened is that some part of it outlives the overlay, or the overlay
+ * outstays the timeline and sits over a page nobody can click.
+ */
+test.describe('Opening animation', () => {
+  // A fresh context has an empty sessionStorage, so the opening plays.
+  test('rolls the round mark in, brings the three drawings with it, and leaves', async ({ page }) => {
+    await page.goto('/');
+
+    const intro = page.locator('.c-intro');
+    await expect(intro).toBeVisible();
+
+    // The mark it is built around, and the company it keeps.
+    await expect(page.locator('.c-intro__logo')).toHaveAttribute('src', /logo-top\.png$/);
+    await expect(page.locator('.c-intro__friend')).toHaveCount(3);
+
+    // Nothing may spill sideways while the mark is still travelling.
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+      ),
+    ).toBe(false);
+
+    // And it has to take itself away, or the page underneath is unusable.
+    await expect(intro).toBeHidden({ timeout: 6000 });
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  });
+
+  test('the hero mark is the same file, so it costs no second request', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.c-intro')).toBeHidden({ timeout: 6000 });
+
+    await expect(page.locator('.c-hero__logo')).toHaveAttribute('src', /logo-top\.png$/);
   });
 });

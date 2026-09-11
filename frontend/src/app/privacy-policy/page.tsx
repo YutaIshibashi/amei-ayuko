@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import JsonLd from '@/components/JsonLd';
-import { INSTAGRAM_URL, SITE } from '@/lib/site';
+import { EDGE_DECO, INSTAGRAM_URL, SITE } from '@/lib/site';
+import EdgeDeco from '@/components/EdgeDeco';
 
 /**
  * Last updated date for this document.
@@ -44,6 +45,7 @@ export default function PrivacyPolicyPage() {
       <Breadcrumbs items={[{ label: 'ホーム', href: '/' }, { label: title }]} />
 
       <section className="l-section l-section--paper" style={{ paddingTop: 'var(--s-5)' }}>
+        <EdgeDeco {...EDGE_DECO.bear} size={115} top="8%" />
         <div className="l-page">
           <div className="c-pageHead">
             <span className="c-pageHead__en">Privacy Policy</span>

@@ -38,10 +38,10 @@ export default function Footer({ onOpenCookieSettings }: { onOpenCookieSettings:
           <div>
             <img
               className="c-footer__brandLogo"
-              src={ASSETS.logo}
+              src={ASSETS.headerIcon}
               alt={SITE.name}
-              width={186}
-              height={46}
+              width={517}
+              height={168}
               loading="lazy"
             />
             <p className="c-footer__concept">{s.brandConcept}</p>

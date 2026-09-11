@@ -6,13 +6,14 @@ import { fetchNewsDetail } from '@/lib/api';
 import { track } from '@/lib/analytics';
 import { formatDate, formatPrice, toIsoJst } from '@/lib/format';
 import { useMounted } from '@/lib/hooks';
-import { newsCategoryLabel, SITE } from '@/lib/site';
+import { EDGE_DECO, SITE, newsCategoryLabel } from '@/lib/site';
 import type { NewsDetail } from '@/lib/types';
 import Breadcrumbs from '../Breadcrumbs';
 import ShareButtons from '../ShareButtons';
 import StatusPage from '../StatusPage';
 import { WaveLine } from '../Deco';
 import { IconArrowRight } from '../Icons';
+import EdgeDeco from '../EdgeDeco';
 
 /**
  * News article.
@@ -104,6 +105,7 @@ export default function NewsDetailClient() {
       />
 
       <article className="l-section l-section--paper" style={{ paddingTop: 'var(--s-5)' }}>
+        <EdgeDeco {...EDGE_DECO.bearBlack} size={115} bottom="10%" />
         <div className="l-page c-article">
           <header className="c-article__head">
             <div className="c-article__meta">

@@ -1,4 +1,4 @@
-import { ASSETS, SITE } from '@/lib/site';
+import { ASSETS, EDGE_DECO, SITE } from '@/lib/site';
 
 /**
  * Opening animation.
@@ -32,21 +32,45 @@ import { ASSETS, SITE } from '@/lib/site';
 export default function Intro() {
   return (
     <div className="c-intro" aria-hidden="true" inert>
-      {/* Spread across the viewport rather than around the wordmark, so the
+      {/* Spread across the viewport rather than around the mark, so the
           composition does not clump in the middle of a wide screen. */}
       <span className="c-intro__dot c-intro__dot--1" />
       <span className="c-intro__dot c-intro__dot--2" />
       <span className="c-intro__dot c-intro__dot--3" />
       <span className="c-intro__dot c-intro__dot--4" />
 
+      {/* The same three drawings the page itself uses, arriving from the same
+          edges they were drawn to peek around. */}
+      <img
+        className="c-intro__friend c-intro__friend--left"
+        src={EDGE_DECO.bearBoy.src}
+        alt=""
+        width={EDGE_DECO.bearBoy.width}
+        height={EDGE_DECO.bearBoy.height}
+      />
+      <img
+        className="c-intro__friend c-intro__friend--right"
+        src={EDGE_DECO.rabbitGirl.src}
+        alt=""
+        width={EDGE_DECO.rabbitGirl.width}
+        height={EDGE_DECO.rabbitGirl.height}
+      />
+      <img
+        className="c-intro__friend c-intro__friend--baby"
+        src={EDGE_DECO.baby.src}
+        alt=""
+        width={EDGE_DECO.baby.width}
+        height={EDGE_DECO.baby.height}
+      />
+
       <div className="c-intro__inner">
-        {/* Same file as the hero logo, so this costs no extra request. */}
+        {/* Same file as the hero mark, so this costs no extra request. */}
         <img
           className="c-intro__logo"
-          src={ASSETS.logo}
+          src={ASSETS.topIcon}
           alt=""
-          width={280}
-          height={70}
+          width={640}
+          height={640}
           fetchPriority="high"
         />
 

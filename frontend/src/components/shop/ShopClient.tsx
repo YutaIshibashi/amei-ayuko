@@ -4,12 +4,13 @@ import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fetchProducts } from '@/lib/api';
 import { track } from '@/lib/analytics';
-import { CATEGORIES, DEFAULT_CATEGORY, isCategorySlug, type CategorySlug } from '@/lib/site';
+import { CATEGORIES, DEFAULT_CATEGORY, EDGE_DECO, isCategorySlug, type CategorySlug } from '@/lib/site';
 import type { Product } from '@/lib/types';
 import StatusPage from '../StatusPage';
 import { Cloud, Sparkle } from '../Deco';
 import ProductCard from './ProductCard';
 import ProductModal from './ProductModal';
+import EdgeDeco from '../EdgeDeco';
 
 /** Number of cards that are (roughly) above the fold on a wide screen. */
 const EAGER_CARDS = 4;
@@ -140,6 +141,7 @@ export default function ShopClient() {
   return (
     <>
       <section className="l-section l-section--cream" style={{ paddingTop: 'var(--s-6)' }}>
+        <EdgeDeco {...EDGE_DECO.bearBlack} size={120} top="18%" />
         <Cloud className="c-deco" style={{ top: '4%', right: '4%', color: '#fff', opacity: 0.8 }} width={180} />
         <Sparkle className="c-deco c-deco--float" style={{ top: '16%', left: '6%', color: 'var(--c-sun)' }} width={26} />
 
@@ -182,6 +184,7 @@ export default function ShopClient() {
       </section>
 
       <section className="l-section l-section--paper" style={{ paddingTop: 'var(--s-6)' }}>
+        <EdgeDeco {...EDGE_DECO.rabbit} size={120} top="6%" />
         <div className="l-page">
           <div
             role="tabpanel"

@@ -28,8 +28,39 @@
   .c-hero__inner { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: var(--s-8); }
 }
 
-.c-hero__logo { width: min(260px, 62vw); height: auto; margin-bottom: var(--s-5); }
-@media (min-width: 900px) { .c-hero__logo { width: min(320px, 30vw); } }
+/* The round mark, which is square — hence the smaller box than the wordmark
+   it replaced, so the copy underneath keeps its place on the fold. */
+.c-hero__logo {
+  width: min(148px, 38vw);
+  height: auto;
+  margin-bottom: var(--s-5);
+  transform-origin: 50% 50%;
+  /* `backwards` so it is already at the first keyframe before the delay ends,
+     rather than flashing at full size and then starting. */
+  animation: hero-logo-bloom 1250ms cubic-bezier(0.2, 0.72, 0.24, 1) 160ms backwards;
+}
+@media (min-width: 900px) { .c-hero__logo { width: min(176px, 15vw); } }
+
+/* Opens from nothing, spreads out across the hero — which clips it — and
+   settles at the size the layout reserved. The opacity is done with early,
+   so the mark is a candidate for LCP almost immediately rather than only
+   once the growth finishes. */
+@keyframes hero-logo-bloom {
+  0%   { opacity: 0; transform: scale(0.02); }
+  14%  { opacity: 1; }
+  /* The peak is a moment, not a plateau: it covers the headline while it is
+     there, so it spreads, and then it is on its way down. */
+  42%  { transform: scale(3.8); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* On a first visit the opening animation is covering all of this, so the
+   bloom waits for the overlay to lift instead of playing behind it. */
+html:not([data-intro='skip']) .c-hero__logo { animation-delay: 2260ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .c-hero__logo { animation: none; }
+}
 
 .c-hero__copy {
   font-family: var(--font-jp-display);

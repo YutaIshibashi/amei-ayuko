@@ -27,12 +27,13 @@ export default function Hero() {
 
       <div className="l-page c-hero__inner">
         <div>
+          {/* Blooms open from nothing on load — see `hero-logo-bloom`. */}
           <img
             className="c-hero__logo"
-            src={ASSETS.logo}
+            src={ASSETS.topIcon}
             alt={SITE.name}
-            width={320}
-            height={80}
+            width={640}
+            height={640}
             fetchPriority="high"
           />
 

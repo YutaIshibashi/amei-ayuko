@@ -3,7 +3,8 @@ import ContactForm from '@/components/contact/ContactForm';
 import ContactIntro from '@/components/contact/ContactIntro';
 import JsonLd from '@/components/JsonLd';
 import { Cloud, Sparkle } from '@/components/Deco';
-import { SITE } from '@/lib/site';
+import { EDGE_DECO, SITE } from '@/lib/site';
+import EdgeDeco from '@/components/EdgeDeco';
 
 const title = 'お問い合わせ';
 const description =
@@ -37,6 +38,8 @@ export default function ContactPage() {
       />
 
       <section className="l-section l-section--cream" style={{ paddingTop: 'var(--s-6)' }}>
+        <EdgeDeco {...EDGE_DECO.bearBlack} size={115} top="12%" />
+        <EdgeDeco {...EDGE_DECO.rabbit} size={115} bottom="10%" delay={140} />
         <Cloud className="c-deco" style={{ top: '5%', right: '6%', color: '#fff', opacity: 0.85 }} width={170} />
         <Sparkle className="c-deco c-deco--float" style={{ bottom: '10%', left: '5%', color: 'var(--c-sun)' }} width={26} />
 
