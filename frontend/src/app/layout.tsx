@@ -49,7 +49,13 @@ const BOOT_SCRIPT = `
     var KEY = 'amei.intro.v1';
     var path = location.pathname;
     var isHome = path === '/' || path === '/index.html';
-    if (isHome && !sessionStorage.getItem(KEY)) {
+    // Reduced motion hides the overlay in CSS, so it never animates and never
+    // reports that it finished. Calling that 'play' would leave the state
+    // stuck there for the session, and everything waiting on the opening to
+    // end would wait for ever. It is skipped for these visitors, so say so.
+    var reduced = window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isHome && !reduced && !sessionStorage.getItem(KEY)) {
       sessionStorage.setItem(KEY, '1');
       root.setAttribute('data-intro', 'play');
     } else {

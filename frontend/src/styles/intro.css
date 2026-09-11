@@ -5,9 +5,12 @@
    it — the final keyframe sets `visibility: hidden` with `forwards`, so the
    overlay stops covering and stops hit-testing even if the bundle never runs.
 
-   Total timeline: 2250ms — longer than it was, because the mark now travels
+   Total timeline: 3250ms — longer than it was, because the mark now travels
    across the screen rather than lifting in place, and the three drawings have
-   to arrive before the copy reads as settled.
+   to arrive before the copy reads as settled. The last second of it is a
+   hold: everything has landed by 1730ms, and the curtain used to start
+   lifting 120ms later, which was not long enough to read the line it had
+   just finished writing.
       80 – 1230ms  the round mark rolls in from the right and comes to rest
      700 – 1250ms  the boy and his bear arrive from the left
      780 – 1330ms  the girl and her rabbit arrive from the right
@@ -15,7 +18,8 @@
      900 – 1510ms  the hand-drawn rule strokes itself in
     1000 – 1520ms  four dots pop
     1250 – 1730ms  the concept copy follows
-    1850 – 2250ms  the whole overlay lifts away
+    1730 – 2850ms  everything holds, so the copy can be read
+    2850 – 3250ms  the whole overlay lifts away
    ========================================================================= */
 
 .c-intro {
@@ -32,7 +36,7 @@
   /* The mark starts off the right-hand edge; without this it would widen the
      document and put a scrollbar on the page for the length of the opening. */
   overflow: hidden;
-  animation: intro-lift 400ms var(--ease-soft) 1850ms forwards;
+  animation: intro-lift 400ms var(--ease-soft) 2850ms forwards;
 }
 
 /* `visibility` interpolates discretely, so the 99% stop makes the hand-off

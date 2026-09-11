@@ -35,6 +35,13 @@ test.describe('Brand illustrations', () => {
   test(`every edge illustration on ${path} slides in and comes to rest on screen`, async ({ page }) => {
     await page.goto(path);
     const decos = page.locator('.c-edgeDeco');
+
+    // Waited for, not counted straight away: /shop/ and /news/ draw their
+    // sections client-side, so for a moment after navigation the page is a
+    // Suspense fallback with no illustrations in it at all. Counting then
+    // reads as "this page has none", which is how this passed on a fast
+    // machine and failed in CI.
+    await expect(decos.first()).toBeAttached();
     const count = await decos.count();
     expect(count).toBeGreaterThan(0);
 
@@ -202,6 +209,54 @@ test.describe('Opening animation', () => {
     }
   });
 
+  test('the hero mark is withheld while the curtain is up, then rolls in', async ({ page }) => {
+    await page.goto('/');
+
+    // While the opening is on screen the mark must carry no animation at all.
+    // Delaying it instead looks equivalent and is not: the attribute below
+    // flips at the very moment such a delay would be counting to, so the rule
+    // carrying it stops matching and the browser finds an animation whose
+    // time has already passed — the mark appears finished, having never
+    // moved. `animation: none` is what makes the start survive the hand-off.
+    await expect(page.locator('html')).toHaveAttribute('data-intro', 'play');
+    expect(
+      await page.locator('.c-hero__logo').evaluate((el) => ({
+        animation: getComputedStyle(el).animationName,
+        opacity: Number(getComputedStyle(el).opacity),
+      })),
+    ).toEqual({ animation: 'none', opacity: 0 });
+
+    await expect(page.locator('.c-intro')).toBeHidden({ timeout: 6000 });
+    await expect(page.locator('html')).toHaveAttribute('data-intro', 'skip');
+
+    // And now it is a real entrance, ending where the layout put it.
+    await expect
+      .poll(() => page.locator('.c-hero__logo').evaluate((el) => Number(getComputedStyle(el).opacity)))
+      .toBeGreaterThan(0.9);
+    expect(
+      await page.locator('.c-hero__logo').evaluate((el) => getComputedStyle(el).animationName),
+    ).toBe('hero-logo-roll');
+  });
+
+  test.describe('with reduced motion', () => {
+    test('the hero mark is simply there, on a first visit', async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.goto('/');
+
+      // The overlay is hidden in CSS for these visitors, so it never animates
+      // and never reports that it finished. Anything that waits for that
+      // report waits for ever — which for the mark meant `opacity: 0` for the
+      // whole session, the one group who should get the page immediately.
+      await expect(page.locator('.c-intro')).toBeHidden();
+      await expect(page.locator('html')).toHaveAttribute('data-intro', 'skip');
+
+      const mark = page.locator('.c-hero__logo');
+      await expect(mark).toBeVisible();
+      expect(await mark.evaluate((el) => Number(getComputedStyle(el).opacity))).toBe(1);
+      expect(await mark.evaluate((el) => getComputedStyle(el).animationName)).toBe('none');
+    });
+  });
+
   test('coming back to the top page does not hide the hero mark', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('.c-intro')).toBeHidden({ timeout: 6000 });
@@ -216,9 +271,9 @@ test.describe('Opening animation', () => {
     await page.goBack();
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
-    // Well inside the 2260ms the mark used to wait, and well outside the
-    // ~340ms its own entrance takes: the window is what makes this a test of
-    // the delay rather than of the animation.
+    // Comfortably outside the ~340ms the entrance itself takes, and far inside
+    // the length of an opening: if the mark were waiting on one — it is not
+    // replaying, so it would wait for ever — it would still be at zero here.
     await expect
       .poll(
         () => page.locator('.c-hero__logo').evaluate((el) => Number(getComputedStyle(el).opacity)),
