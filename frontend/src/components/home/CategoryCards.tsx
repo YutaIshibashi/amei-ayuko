@@ -15,8 +15,8 @@ import { IconArrowRight } from '../Icons';
  * deep-links into the shop with the tab pre-selected.
  */
 const CARD_ART = {
-  'album-flake': { photo: '/brand/category-album-flake.svg', color: 'var(--c-brand-soft)' },
-  stamp: { photo: '/brand/category-stamp.svg', color: 'var(--c-mint-soft)' },
+  'album-flake': { photo: '/brand/product-album-flake.jpg', color: 'var(--c-brand-soft)' },
+  stamp: { photo: '/brand/product-stamp.jpg', color: 'var(--c-mint-soft)' },
 } as const;
 
 export default function CategoryCards() {
@@ -44,8 +44,8 @@ export default function CategoryCards() {
                   <img
                     src={CARD_ART[cat.slug].photo}
                     alt={`${cat.ja}の商品イメージ`}
-                    width={720}
-                    height={540}
+                    width={1080}
+                    height={810}
                     loading="lazy"
                     decoding="async"
                   />
