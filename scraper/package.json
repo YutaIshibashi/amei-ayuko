@@ -15,11 +15,11 @@
   "dependencies": {
     "cheerio": "1.2.0",
     "sharp": "0.35.4",
-    "undici": "8.10.1"
+    "undici": "8.11.2"
   },
   "devDependencies": {
-    "@types/node": "26.4.1",
-    "tsx": "4.23.13",
+    "@types/node": "26.6.2",
+    "tsx": "4.23.15",
     "typescript": "7.0.2"
   }
 }
